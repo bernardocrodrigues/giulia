@@ -2,5 +2,3 @@
 #define Giulia_VERSION_MAJOR @Giulia_VERSION_MAJOR@
 #define Giulia_VERSION_MINOR @Giulia_VERSION_MINOR@
 #define Giulia_VERSION_PATCH @Giulia_VERSION_PATCH@
-
-#define CL_TARGET_OPENCL_VERSION 120

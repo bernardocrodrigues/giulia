@@ -1,5 +1,6 @@
 
 include_directories(${PROJECT_SOURCE_DIR}/src/cl)
+include_directories(${PROJECT_SOURCE_DIR}/src/gl)
 
 # add the executable
 add_executable(ProcessArray process_array.cpp)
@@ -36,8 +37,16 @@ target_link_libraries(GLtest ${OPENGL_LIBRARIES} ${GLUT_LIBRARY} )
 
 # Modern GL Example
 find_package(GLEW REQUIRED)
-add_executable(GLFWtest glfw_test.cpp)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
+
+add_executable(GLFWtest glfw_test.cpp)
+
+target_include_directories(GLFWtest PUBLIC
+                           "${PROJECT_BINARY_DIR}"
+                          )
+
 include_directories(${GLFW_INCLUDE_DIRS})
-target_link_libraries(GLFWtest ${GLEW_LIBRARIES} ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES} )
+target_link_libraries(GLFWtest ${GLEW_LIBRARIES} ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES} GLUtils)
+# target_link_libraries(GLFWtest GLUtils)
+

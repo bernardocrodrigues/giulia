@@ -11,3 +11,4 @@ project(Giulia VERSION 0.1.0
 # add the scr folder
 add_subdirectory(src/app)
 add_subdirectory(src/cl)
+add_subdirectory(src/gl)

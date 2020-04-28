@@ -2,6 +2,7 @@
 #include <signal.h>
 #include <vector>
 #include <GL/glew.h>
+#include <unordered_map>
 
 
 #define ASSERT(x) if(!(x)){raise(SIGTRAP);}
@@ -40,9 +41,20 @@ class IndexBuffer{
 };
 
 struct VertexBufferElement{
-    uint count;
     uint type;
-    bool normalized;
+    uint count;
+    uint normalized;
+
+    static uint GetSizeOfType( uint type ) {
+        switch (type)
+        {
+            case GL_FLOAT:             return 4;
+            case GL_UNSIGNED_INT:      return 4;
+            case GL_UNSIGNED_BYTE:     return 1;
+        }
+        ASSERT(false);
+        return 0;
+    }
 };
 
 class VertexBufferLayout{
@@ -54,36 +66,51 @@ class VertexBufferLayout{
             : m_stride(0) {}
 
         template<typename T>
-        void Push(int count)
+        void Push(uint count)
         {
             static_assert(true);
         }
-    
-        template<>
-        void Push<float>(int count)
-        {
-            // m_elements.push_back({GL_FLOAT, count, false});
-            // m_stride += sizeof(GLfloat);
-        }
 
-        // template<>
-        // void Push<uint>(int count){
-        //     m_elements.push_back({GL_UNSIGNED_INT, count, false});
-        // }
-
-        // template<>
-        // void Push<>(u_char count){
-        //     m_elements.push_back({GL_UNSIGNED_BYTE, count, true});
-        // }
-
+        inline const std::vector<VertexBufferElement> GetElements() const { return m_elements; }
+        inline const int GetStride() const { return m_stride; }
 };
 
 class VertexArray{
     private:
-
+        uint m_renderer_id;
     public:
         VertexArray();
         ~VertexArray();
 
-        void AddBuffer(const VertexBuffer& vb, VertexBufferLayout layout);
+        void AddBuffer(const VertexBuffer& vb, VertexBufferLayout& layout);
+
+        void Bind() const;
+        void Unbind() const;
+};
+
+struct ShaderSource{
+    std::string VertexSource;
+    std::string FragmentSource;
+};
+
+class Shader{
+    public:
+        Shader(const std::string& filepath);
+        ~Shader();
+
+        void Bind() const;
+        void Unbind() const;
+
+        void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
+    
+    private:
+        uint m_renderer_id;
+        std::string m_filepath;
+        std::unordered_map<std::string, int> m_uniform_location_cache;
+
+        ShaderSource ParseShader(const std::string& filepath);
+        uint CreateShader(const std::string& vertexShader, const std::string& fragmentShader);
+        uint CompileShader(uint type, const std::string& source);
+        int GetUniformLocation(const std::string& name );
+
 };

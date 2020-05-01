@@ -192,7 +192,23 @@ void Shader::Unbind() const {
 void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3) {
     GlCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
-    
+
+void Shader::SetUniform2f(const std::string& name, float v0, float v1) {
+    GlCall(glUniform2f(GetUniformLocation(name), v0, v1));
+}
+
+void Shader::SetUniform1f(const std::string& name, float v0) {
+    GlCall(glUniform1f(GetUniformLocation(name), v0));
+}
+
+void Shader::SetUniform2d(const std::string& name, double v0, double v1) {
+    GlCall(glUniform2d(GetUniformLocation(name), v0, v1));
+}
+
+void Shader::SetUniform1d(const std::string& name, double v0) {
+    GlCall(glUniform1d(GetUniformLocation(name), v0));
+}
+
 int Shader::GetUniformLocation(const std::string& name ) {
 
     if (m_uniform_location_cache.find(name) != m_uniform_location_cache.end()){
@@ -205,4 +221,16 @@ int Shader::GetUniformLocation(const std::string& name ) {
 
     m_uniform_location_cache[name] = location;
     return location;
+}
+
+void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const {
+
+    shader.Bind();
+    va.Bind();
+    ib.Bind();
+    GlCall(glDrawElements(GL_TRIANGLES, ib.getCount(), GL_UNSIGNED_INT, nullptr));
+}
+
+void Renderer::Clear() const {
+    GlCall(glClear(GL_COLOR_BUFFER_BIT));
 }

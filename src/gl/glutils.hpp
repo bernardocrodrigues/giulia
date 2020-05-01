@@ -102,6 +102,11 @@ class Shader{
         void Unbind() const;
 
         void SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3);
+        void SetUniform2f(const std::string& name, float v0, float v1);
+        void SetUniform1f(const std::string& name, float v0);
+
+        void SetUniform2d(const std::string& name, double v0, double v1);
+        void SetUniform1d(const std::string& name, double v0);
     
     private:
         uint m_renderer_id;
@@ -113,4 +118,10 @@ class Shader{
         uint CompileShader(uint type, const std::string& source);
         int GetUniformLocation(const std::string& name );
 
+};
+
+class Renderer{
+    public:
+        void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
+        void Clear() const;
 };

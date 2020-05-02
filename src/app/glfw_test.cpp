@@ -30,8 +30,8 @@ complex_number down_left = {-2.2, -1.5};
 double range_ = 3;
 
 
-int width = 1000;
-int height = 1000;
+int width = 2000;
+int height = 2000;
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     switch (mouse)
@@ -129,42 +129,52 @@ int main(void)
             -1.0, 1.0
         };
 
+        float position_cursor[] = {
+            0.0, 0.5,
+            0.5, -0.5,
+            -0.5, -0.5,
+        };
+
         uint indices[] =
         { 0, 1, 2,
         2, 3, 0 };
 
-        VertexArray va;
-        VertexBuffer vb(positions, 8 * sizeof(float));
+        uint indices_cursor[] =
+        { 0, 1, 2};
 
         VertexBufferLayout layout;
         layout.Push<float>(2);
-        va.AddBuffer(vb, layout);
 
+        VertexArray va;
+        VertexBuffer vb(positions, 8 * sizeof(float));
+        va.AddBuffer(vb, layout);
         IndexBuffer ib(indices, 6);
 
-        Shader shader("src/gl/shaders/basic.shader");
-        shader.Bind();
-        // shader.SetUniform2d("down_left", -2.2, -1.5);
-        // shader.SetUniform1d("range_", 3);
+        VertexArray va_cursor;
+        VertexBuffer vb_cursor(position_cursor, 6 * sizeof(float));
+        va_cursor.AddBuffer(vb_cursor, layout);
+        IndexBuffer ib_cursor(indices_cursor, 3);
+
+        Shader double_precision_shader("src/gl/shaders/double_precision.shader");
+        Shader single_precision_shader("src/gl/shaders/single_precision.shader");
+        Shader pointer_shader("src/gl/shaders/pointer.shader");
+
+        double_precision_shader.Bind();
+        double_precision_shader.SetUniform2ui("screen_resolution", width, height);
+        double_precision_shader.SetUniform1ui("mode_", 0);
+        single_precision_shader.Bind();
+        single_precision_shader.SetUniform2ui("screen_resolution", width, height);
+        single_precision_shader.SetUniform1ui("mode_", 0);
 
         va.Unbind();
         vb.Unbind();
         ib.Unbind();
-        shader.Unbind();
 
         Renderer renderer;
-
-        // float r = -3.0;
-        float inc = 0.05;
 
         double lastTime = glfwGetTime();
         int nbFrames = 0;
 
-
-        
-        // complex_number down_left = {-2.2, -1.5};
-
-        // double xpos, ypos;
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -173,31 +183,30 @@ int main(void)
             double currentTime = glfwGetTime();
             nbFrames++;
             if ( currentTime - lastTime >= 1.0 ) {
-                printf("%f ms/frame (%d fps)\n", 1000.0/double(nbFrames), nbFrames);
+                printf("%f ms/frame (%d fps) | range: %f\n", 1000.0/double(nbFrames), nbFrames, (float) range_);
                 nbFrames = 0;
                 lastTime += 1.0;
             }
 
-            // if(r > 3.0){
-            //     inc = -0.05;
-            // }else if( r < 0.5){
-            //     inc = 0.05;
-            // }
-            // r += inc;
-
-
-
-            shader.Bind();
-            shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
-            shader.SetUniform1d("range_", range_);
             /* Render here */
             renderer.Clear();
 
+            if (range_ < 0.000023) {
+                double_precision_shader.Bind();
+                double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
+                double_precision_shader.SetUniform1d("range_", range_);
+                renderer.Draw(va, ib, double_precision_shader);
+            }else{
+                single_precision_shader.Bind();
+                single_precision_shader.SetUniform2f("down_left", (float) down_left.real, (float) down_left.imaginary);
+                single_precision_shader.SetUniform1f("range_", (float) range_);
+                renderer.Draw(va, ib, single_precision_shader);
+            }
+
+            // renderer.Draw(va_cursor, ib_cursor, pointer_shader);
+
             // shader.SetUniform2d("down_left", r, -1.5);
             // shader.SetUniform1d("range_", 3);
-
-
-            renderer.Draw(va, ib, shader);
 
             /* Swap front and back buffers */
             GlCall(glfwSwapBuffers(window));

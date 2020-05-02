@@ -209,6 +209,14 @@ void Shader::SetUniform1d(const std::string& name, double v0) {
     GlCall(glUniform1d(GetUniformLocation(name), v0));
 }
 
+void Shader::SetUniform2ui(const std::string& name, unsigned int v0, unsigned int v1) {
+    GlCall(glUniform2ui(GetUniformLocation(name), v0, v1));
+}
+
+void Shader::SetUniform1ui(const std::string& name, unsigned int v0) {
+    GlCall(glUniform1ui(GetUniformLocation(name), v0));
+}
+
 int Shader::GetUniformLocation(const std::string& name ) {
 
     if (m_uniform_location_cache.find(name) != m_uniform_location_cache.end()){

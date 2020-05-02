@@ -108,6 +108,9 @@ class Shader{
         void SetUniform2d(const std::string& name, double v0, double v1);
         void SetUniform1d(const std::string& name, double v0);
     
+        void SetUniform2ui(const std::string& name, unsigned int v0, unsigned int v1);
+        void SetUniform1ui(const std::string& name, unsigned int v0);
+
     private:
         uint m_renderer_id;
         std::string m_filepath;

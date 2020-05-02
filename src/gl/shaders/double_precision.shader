@@ -14,6 +14,7 @@ void main()
 layout(location = 0) out vec4 color;
 uniform dvec2 down_left;
 uniform double range_;
+uniform uvec2 screen_resolution;
 
 double magnetude(in dvec2 c_num){
     return sqrt((c_num.x * c_num.x) + (c_num.y * c_num.y));
@@ -49,7 +50,7 @@ int mandebrot_set_degree(in dvec2 candidate, in int max_steps, in float threshol
     int index = 0;
 
     while (index < max_steps && (magnetude(z) < threshold)) {
-        z = add_(product(z, product(z,z)), c);
+        z = add_(product(z,z), c);
         index++;
     }
 
@@ -58,28 +59,16 @@ int mandebrot_set_degree(in dvec2 candidate, in int max_steps, in float threshol
 
 void main()
 {
-    // vec2 st = gl_FragCoord.xy;
-    // float rnd = random( st );
-
-    // if(rnd > 0.95){
-
     dvec2 imaginary_number;
-    imaginary_number.x = down_left.x + (range_*gl_FragCoord.x)/1000;
-    imaginary_number.y = down_left.y + (range_*gl_FragCoord.y)/1000;
+    imaginary_number.x = down_left.x + (range_*gl_FragCoord.x)/screen_resolution.x;
+    imaginary_number.y = down_left.y + (range_*gl_FragCoord.y)/screen_resolution.y;
 
-    float mandebrot = float(mandebrot_set_degree(imaginary_number, 256, 4.0))/256;
+    int mandebrot_num = mandebrot_set_degree(imaginary_number, 256, 4.0);
+    float mandebrot = (float(mandebrot_num) / 256);
 
     vec4 aux;
     aux.x = mandebrot;
     aux.y = mandebrot;
     aux.z = mandebrot;
-
     color = aux;
-    //     color = vec4(1.0,0.0,0.0,1.0);
-    // }else{
-    //     color = vec4(0.0,0.0,0.0,0.0);
-    // }
-
-
-
 };

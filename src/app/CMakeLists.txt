@@ -1,6 +1,9 @@
 
 include_directories(${PROJECT_SOURCE_DIR}/src/cl)
 include_directories(${PROJECT_SOURCE_DIR}/src/gl)
+# include_directories(${PROJECT_SOURCE_DIR}/src/vendor)
+
+set(OpenGL_GL_PREFERENCE GLVND)
 
 # add the executable
 add_executable(ProcessArray process_array.cpp)

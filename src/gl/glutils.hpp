@@ -128,3 +128,20 @@ class Renderer{
         void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
         void Clear() const;
 };
+
+class Texture{
+    private:
+        unsigned int m_renderer;
+        std::string m_file_path;
+        unsigned char* m_buffer;
+        int m_width, m_height, m_bpp;
+    public:
+        Texture(const std::string& path);
+        ~Texture();
+
+        void Bind(unsigned int slot = 0) const;
+        void Unbind() const;
+
+        inline int GetWidth() const { return m_width; }
+        inline int GetHeight() const { return m_height; }
+};

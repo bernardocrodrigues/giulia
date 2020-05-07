@@ -36,6 +36,13 @@ dvec2 add_(in dvec2 c_num_a, in dvec2 c_num_b) {
     return aux;
 }
 
+float random (vec2 st) {
+    return fract(sin(dot(st.xy,
+                         vec2(12.9898,78.233)))*
+        43758.5453123);
+}
+
+
 int mandebrot_set_degree(in dvec2 candidate, in int max_steps, in float threshold) {
 
     dvec2 c = candidate;
@@ -58,8 +65,14 @@ void main()
     imaginary_number.x = down_left.x + (range_*gl_FragCoord.x)/screen_resolution.x;
     imaginary_number.y = down_left.y + (range_*gl_FragCoord.y)/screen_resolution.y;
 
-    int mandebrot_num = mandebrot_set_degree(imaginary_number, iter, 4.0);
-    float mandebrot = (float(mandebrot_num) / iter);
+    float mandebrot;
+
+    if( !bool(int(gl_FragCoord.x) % 5) && !bool(int(gl_FragCoord.y) % 5)){
+        int mandebrot_num = mandebrot_set_degree(imaginary_number, iter, 4.0);
+        mandebrot = (float(mandebrot_num) / iter);
+    } else {
+        mandebrot = 0.0;
+    }
 
     vec4 aux;
     aux.x = mandebrot;

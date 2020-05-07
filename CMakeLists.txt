@@ -6,9 +6,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 # set the project name
 project(Giulia VERSION 0.1.0
-                LANGUAGES CXX)
+                LANGUAGES C CXX)
 
 # add the scr folder
 add_subdirectory(src/app)
 add_subdirectory(src/cl)
 add_subdirectory(src/gl)
+add_subdirectory(src/vendor)

@@ -11,6 +11,8 @@ void main()
 #shader fragment
 #version 400 core
 
+#define iter 1024
+
 layout(location = 0) out vec4 color;
 uniform vec2 down_left;
 uniform uvec2 screen_resolution;
@@ -54,8 +56,8 @@ void main()
         z.x = down_left.x + (range_*gl_FragCoord.x)/screen_resolution.x;
         z.y = down_left.y + (range_*gl_FragCoord.y)/screen_resolution.y;
 
-        int mandebrot_num = mandebrot_set_degree(z, z, 256, 4.0);
-        float mandebrot = (float(mandebrot_num) / 256);
+        int mandebrot_num = mandebrot_set_degree(z, z, iter, 4.0);
+        float mandebrot = (float(mandebrot_num) / iter);
         aux.x = mandebrot;
         aux.y = mandebrot;
         aux.z = mandebrot;
@@ -64,8 +66,8 @@ void main()
         z.x = -1.5 + (range_*gl_FragCoord.x)/screen_resolution.x;
         z.y = -1.5 + (range_*gl_FragCoord.y)/screen_resolution.y;
 
-        int mandebrot_num = mandebrot_set_degree(z, down_left, 256, 4.0);
-        float mandebrot = (float(mandebrot_num) / 256);
+        int mandebrot_num = mandebrot_set_degree(z, down_left, iter, 4.0);
+        float mandebrot = (float(mandebrot_num) / iter);
         aux.x = mandebrot;
         aux.y = mandebrot;
         aux.z = mandebrot;

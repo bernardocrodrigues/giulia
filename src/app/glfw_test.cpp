@@ -4,14 +4,15 @@
 #include <fstream>
 #include <sstream>
 #include <signal.h>
+#include <unistd.h>
 #include "glutils.hpp"
+
 
 typedef enum {
     MOUSE_RELEASSED,
     MOUSE_JUST_CLICKED,
     MOUSE_CLICKED
 } mouse_state_t ;
-
 
 struct mouse_coodenate {
     double x;
@@ -28,10 +29,11 @@ mouse_coodenate anchor = { 0.0, 0.0 };
 mouse_coodenate delta = { 0.0, 0.0 };
 complex_number down_left = {-2.2, -1.5};
 double range_ = 3;
+bool draw_request = true;
 
 
-int width = 2000;
-int height = 2000;
+int width = 1000;
+int height = 1000;
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     switch (mouse)
@@ -42,9 +44,12 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
         break;
     case MOUSE_CLICKED:
         delta = { xpos - anchor.x, ypos - anchor.y};
-        down_left.real = down_left.real - (range_ * delta.x)/width;
-        down_left.imaginary = down_left.imaginary + (range_ * delta.y)/height;
-        anchor = {xpos, ypos};
+        if (delta.x != 0 || delta.y != 0 ){
+            down_left.real = down_left.real - (range_ * delta.x)/width;
+            down_left.imaginary = down_left.imaginary + (range_ * delta.y)/height;
+            anchor = {xpos, ypos};
+            draw_request = true;
+        }
         break;
     case MOUSE_RELEASSED:
         anchor = { 0.0, 0.0 };
@@ -63,6 +68,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
     }else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
         std::cout << "rele " << std::endl;
         mouse = MOUSE_RELEASSED;
+        draw_request = true;
 
     }
 }
@@ -72,9 +78,12 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
   if (yoffset > 0){
       range_ /=2;
       down_left = { down_left.real + range_/2, down_left.imaginary + range_/2};
+      draw_request = true;
+
   }else if (yoffset < 0) {
       range_ *=2;
       down_left = { down_left.real - range_/4, down_left.imaginary - range_/4};
+      draw_request = true;
   }
 }
 
@@ -129,6 +138,13 @@ int main(void)
             -1.0, 1.0
         };
 
+        float logo_positions[] = {
+            -0.5, -0.5, 0.0, 0.0,
+            0.5, -0.5, 1.0, 0.0,
+            0.5, 0.5, 1.0, 1.0
+            -0.5, 0.5, 0.0, 1.0
+        };
+
         float position_cursor[] = {
             0.0, 0.5,
             0.5, -0.5,
@@ -145,6 +161,10 @@ int main(void)
         VertexBufferLayout layout;
         layout.Push<float>(2);
 
+        VertexBufferLayout texture_layout;
+        texture_layout.Push<float>(2);
+        texture_layout.Push<float>(2);
+
         VertexArray va;
         VertexBuffer vb(positions, 8 * sizeof(float));
         va.AddBuffer(vb, layout);
@@ -155,16 +175,30 @@ int main(void)
         va_cursor.AddBuffer(vb_cursor, layout);
         IndexBuffer ib_cursor(indices_cursor, 3);
 
+        VertexArray va_texture;
+        VertexBuffer vb_texture(logo_positions, 16 * sizeof(float));
+        va_cursor.AddBuffer(vb_texture, texture_layout);
+        IndexBuffer ib_texture(indices, 3);
+
+
+
         Shader double_precision_shader("src/gl/shaders/double_precision.shader");
+        Shader double_precision_low_res("src/gl/shaders/double_precision_low_res.shader");
         Shader single_precision_shader("src/gl/shaders/single_precision.shader");
         Shader pointer_shader("src/gl/shaders/pointer.shader");
 
         double_precision_shader.Bind();
         double_precision_shader.SetUniform2ui("screen_resolution", width, height);
-        double_precision_shader.SetUniform1ui("mode_", 0);
+        // double_precision_shader.SetUniform1ui("mode_", 0);
+        double_precision_low_res.Bind();
+        double_precision_low_res.SetUniform2ui("screen_resolution", width, height);
+        // double_precision_low_res.SetUniform1ui("mode_", 0);
         single_precision_shader.Bind();
         single_precision_shader.SetUniform2ui("screen_resolution", width, height);
         single_precision_shader.SetUniform1ui("mode_", 0);
+
+        Texture opengl_logo_texture("res/opengl_logo.png");
+        opengl_logo_texture.Bind();
 
         va.Unbind();
         vb.Unbind();
@@ -189,19 +223,39 @@ int main(void)
             }
 
             /* Render here */
-            renderer.Clear();
+            if (draw_request){
+                renderer.Clear();
+                std::cout << "aaa" << std::endl;
 
-            if (range_ < 0.000023) {
-                double_precision_shader.Bind();
-                double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
-                double_precision_shader.SetUniform1d("range_", range_);
-                renderer.Draw(va, ib, double_precision_shader);
-            }else{
-                single_precision_shader.Bind();
-                single_precision_shader.SetUniform2f("down_left", (float) down_left.real, (float) down_left.imaginary);
-                single_precision_shader.SetUniform1f("range_", (float) range_);
-                renderer.Draw(va, ib, single_precision_shader);
+                if (range_ < 0.000023) {
+                  if(mouse != MOUSE_RELEASSED){
+                      double_precision_low_res.Bind();
+                      double_precision_low_res.SetUniform2d("down_left", down_left.real, down_left.imaginary);
+                      double_precision_low_res.SetUniform1d("range_", range_);
+                      renderer.Draw(va, ib, double_precision_low_res);
+                  }else{
+                      double_precision_shader.Bind();
+                      double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
+                      double_precision_shader.SetUniform1d("range_", range_);
+                      renderer.Draw(va, ib, double_precision_shader);
+                  }
+                }else{
+                    // double_precision_shader.Bind();
+                    // double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
+                    // double_precision_shader.SetUniform1d("range_", range_);
+                    // renderer.Draw(va, ib, double_precision_shader);
+                    single_precision_shader.Bind();
+                    single_precision_shader.SetUniform2f("down_left", (float) down_left.real, (float) down_left.imaginary);
+                    single_precision_shader.SetUniform1f("range_", (float) range_);
+                    renderer.Draw(va, ib, single_precision_shader);
+                }
+
+                GlCall(glfwSwapBuffers(window));
+                draw_request = false;
+            } else {
+                usleep(10000);
             }
+
 
             // renderer.Draw(va_cursor, ib_cursor, pointer_shader);
 
@@ -209,7 +263,6 @@ int main(void)
             // shader.SetUniform1d("range_", 3);
 
             /* Swap front and back buffers */
-            GlCall(glfwSwapBuffers(window));
 
             /* Poll for and process events */
             GlCall(glfwPollEvents());

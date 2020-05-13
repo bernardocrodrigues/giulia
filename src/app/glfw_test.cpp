@@ -34,44 +34,51 @@ mouse_coodenate anchor = { 0.0, 0.0 };
 mouse_coodenate delta = { 0.0, 0.0 };
 complex_number down_left = {-2.2, -1.5};
 double range_ = 3;
-bool draw_request = true;
+// bool draw_request = true;
+int draw_request = 2;
+bool hover = false;
 
 int width = 1000;
 int height = 1000;
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
-    switch (mouse) {
-        case MOUSE_JUST_CLICKED:
-            anchor = {xpos, ypos};
-            mouse = MOUSE_CLICKED;
-            break;
-        case MOUSE_CLICKED:
-            delta = { xpos - anchor.x, ypos - anchor.y};
-            if (delta.x != 0 || delta.y != 0 ){
-                down_left.real = down_left.real - (range_ * delta.x)/width;
-                down_left.imaginary = down_left.imaginary + (range_ * delta.y)/height;
+    if(!hover){
+        switch (mouse) {
+            case MOUSE_JUST_CLICKED:
                 anchor = {xpos, ypos};
-                draw_request = true;
-            }
-            break;
-        case MOUSE_RELEASSED:
-            anchor = { 0.0, 0.0 };
-            delta = { 0.0, 0.0 };
-            break;
-        default:
-            break;
+                mouse = MOUSE_CLICKED;
+                break;
+            case MOUSE_CLICKED:
+                delta = { xpos - anchor.x, ypos - anchor.y};
+                if (delta.x != 0 || delta.y != 0 ){
+                    down_left.real = down_left.real - (range_ * delta.x)/width;
+                    down_left.imaginary = down_left.imaginary + (range_ * delta.y)/height;
+                    anchor = {xpos, ypos};
+                    draw_request = 1;
+                }
+                break;
+            case MOUSE_RELEASSED:
+                anchor = { 0.0, 0.0 };
+                delta = { 0.0, 0.0 };
+                break;
+            default:
+                break;
+        }
+    }else{
+        if(mouse == MOUSE_CLICKED || mouse == MOUSE_JUST_CLICKED)
+            draw_request = 1;
     }
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
-        // std::cout << "click " << std::endl;
+        std::cout << "click " << std::endl;
         mouse = MOUSE_JUST_CLICKED;
     }else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
         // std::cout << "rele " << std::endl;
         mouse = MOUSE_RELEASSED;
-        draw_request = true;
+        draw_request = 2;
     }
 }
 
@@ -80,14 +87,70 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
   if (yoffset > 0){
       range_ /=2;
       down_left = { down_left.real + range_/2, down_left.imaginary + range_/2};
-      draw_request = true;
+      draw_request = 2;
 
   }else if (yoffset < 0) {
       range_ *=2;
       down_left = { down_left.real - range_/4, down_left.imaginary - range_/4};
-      draw_request = true;
+      draw_request = 2;
   }
 }
+
+
+void render_imgui(GLFWwindow* window, bool& hover) {
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    {
+        static float f = 0.0f;
+        static int counter = 0;
+
+        ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+
+        ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
+        // ImGui::Checkbox("Another Window", &show_another_window);
+
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+        // ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+        hover = ImGui::IsWindowFocused();
+        // ImGuiIO *io = &ImGui::GetIO();
+
+        // io.WantCaptureMous = false;
+        // hover = io->MouseDown[0];
+
+
+        if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            counter++;
+        ImGui::SameLine();
+        ImGui::Text("counter = %d", counter);
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
+    }
+
+    // // 3. Show another simple window.
+    // if (show_another_window)
+    // {
+    //     ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+    //     ImGui::Text("Hello from another window!");
+    //     if (ImGui::Button("Close Me"))
+    //         show_another_window = false;
+    //     ImGui::End();
+    // }
+
+    // Rendering
+    ImGui::Render();
+    int display_w, display_h;
+    glfwGetFramebufferSize(window, &display_w, &display_h);
+    glViewport(0, 0, display_w, display_h);
+    // glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
+    // glClear(GL_COLOR_BUFFER_BIT);
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 
 int main(void) {
 
@@ -138,8 +201,9 @@ int main(void) {
     //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
-    ImGui::StyleColorsDark();
+    ImGui::StyleColorsClassic();
     //ImGui::StyleColorsClassic();
+    // ImGui::SetSt().Alpha = 1;
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -268,32 +332,19 @@ int main(void) {
         bool show_another_window = false;
         ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+        bool just_rendered = false;
+
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
         {
             GlCall(glfwPollEvents());
 
 
-
-            double currentTime = glfwGetTime();
-            nbFrames++;
-            if ( currentTime - lastTime >= 1.0 ) {
-                printf("%f ms/frame (%d fps) | range: %f\n", 1000.0/double(nbFrames), nbFrames, (float) range_);
-                nbFrames = 0;
-                lastTime += 1.0;
-            }
-
-            ImGui_ImplOpenGL3_NewFrame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
             // /* Render here */
             if (draw_request){
-            // ImGui_ImplOpenGL3_NewFrame();
-            // ImGui_ImplGlfw_NewFrame();
-            // ImGui::NewFrame();
-
+                draw_request--;
                 renderer.Clear();
-                // std::cout << "aaa" << std::endl;
+                std::cout << "aaa" << std::endl;
 
                 if (range_ < 0.000023) {
                   if(mouse != MOUSE_RELEASSED){
@@ -323,95 +374,19 @@ int main(void) {
                 renderer.Draw(va_texture, ib_texture, texture_shader);
                 GlCall(glDisable(GL_BLEND));
 
-                // {
-                //     static float f = 0.0f;
-                //     static int counter = 0;
-
-                //     ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
-
-                //     ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-                //     ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-                //     ImGui::Checkbox("Another Window", &show_another_window);
-
-                //     ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-                //     ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
-                //     if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                //         counter++;
-                //     ImGui::SameLine();
-                //     ImGui::Text("counter = %d", counter);
-
-                //     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-                //     ImGui::End();
-                // }
-
-                // // 3. Show another simple window.
-                // if (show_another_window)
-                // {
-                //     ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-                //     ImGui::Text("Hello from another window!");
-                //     if (ImGui::Button("Close Me"))
-                //         show_another_window = false;
-                //     ImGui::End();
-                // }
-
-                // // Rendering
-                // ImGui::Render();
-                // int display_w, display_h;
-                // glfwGetFramebufferSize(window, &display_w, &display_h);
-                // glViewport(0, 0, display_w, display_h);
-                // // glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-                // // glClear(GL_COLOR_BUFFER_BIT);
-                // ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-
-
-                // GlCall(glfwSwapBuffers(window));
-                draw_request = false;
+                // just_rendered = true;
+                // draw_request = false;
             } else {
                 usleep(10000);
             }
 
 
-                {
-                    static float f = 0.0f;
-                    static int counter = 0;
+            std::cout << hover << std::endl;
 
-                    ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
 
-                    ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-                    ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-                    ImGui::Checkbox("Another Window", &show_another_window);
 
-                    ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-                    ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            render_imgui(window, hover);
 
-                    if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                        counter++;
-                    ImGui::SameLine();
-                    ImGui::Text("counter = %d", counter);
-
-                    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-                    ImGui::End();
-                }
-
-                // 3. Show another simple window.
-                if (show_another_window)
-                {
-                    ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-                    ImGui::Text("Hello from another window!");
-                    if (ImGui::Button("Close Me"))
-                        show_another_window = false;
-                    ImGui::End();
-                }
-
-                // Rendering
-                ImGui::Render();
-                int display_w, display_h;
-                glfwGetFramebufferSize(window, &display_w, &display_h);
-                glViewport(0, 0, display_w, display_h);
-                // glClearColor(clear_color.x, clear_color.y, clear_color.z, clear_color.w);
-                // glClear(GL_COLOR_BUFFER_BIT);
-                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
             GlCall(glfwSwapBuffers(window));
 

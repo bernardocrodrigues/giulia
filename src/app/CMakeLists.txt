@@ -1,7 +1,8 @@
 
 include_directories(${PROJECT_SOURCE_DIR}/src/cl)
 include_directories(${PROJECT_SOURCE_DIR}/src/gl)
-# include_directories(${PROJECT_SOURCE_DIR}/src/vendor)
+include_directories(${PROJECT_SOURCE_DIR}/src/vendor/glm)
+include_directories(${PROJECT_SOURCE_DIR}/src/vendor/imgui)
 
 set(OpenGL_GL_PREFERENCE GLVND)
 
@@ -50,6 +51,6 @@ target_include_directories(GLFWtest PUBLIC
                           )
 
 include_directories(${GLFW_INCLUDE_DIRS})
-target_link_libraries(GLFWtest ${GLEW_LIBRARIES} ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES} GLUtils)
+target_link_libraries(GLFWtest ${GLEW_LIBRARIES} ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES} GLUtils ImGUI)
 # target_link_libraries(GLFWtest GLUtils)
 

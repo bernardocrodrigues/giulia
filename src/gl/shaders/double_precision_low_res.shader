@@ -36,13 +36,6 @@ dvec2 add_(in dvec2 c_num_a, in dvec2 c_num_b) {
     return aux;
 }
 
-float random (vec2 st) {
-    return fract(sin(dot(st.xy,
-                         vec2(12.9898,78.233)))*
-        43758.5453123);
-}
-
-
 int mandebrot_set_degree(in dvec2 candidate, in int max_steps, in float threshold) {
 
     dvec2 c = candidate;

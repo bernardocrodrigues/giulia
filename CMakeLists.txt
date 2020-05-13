@@ -12,4 +12,6 @@ project(Giulia VERSION 0.1.0
 add_subdirectory(src/app)
 add_subdirectory(src/cl)
 add_subdirectory(src/gl)
-add_subdirectory(src/vendor)
+add_subdirectory(src/vendor/stb)
+add_subdirectory(src/vendor/glm)
+add_subdirectory(src/vendor/imgui)

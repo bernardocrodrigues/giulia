@@ -190,6 +190,10 @@ void Shader::Unbind() const {
     GlCall(glUseProgram(0));
 }
 
+void Shader::SetUniformMat4f(const std::string& name, const glm::mat4 matrix) {
+    GlCall(glUniformMatrix4fv(GetUniformLocation(name), 1, GL_FALSE, &matrix[0][0]));
+}
+
 void Shader::SetUniform4f(const std::string& name, float v0, float v1, float v2, float v3) {
     GlCall(glUniform4f(GetUniformLocation(name), v0, v1, v2, v3));
 }
@@ -216,6 +220,10 @@ void Shader::SetUniform2ui(const std::string& name, unsigned int v0, unsigned in
 
 void Shader::SetUniform1ui(const std::string& name, unsigned int v0) {
     GlCall(glUniform1ui(GetUniformLocation(name), v0));
+}
+
+void Shader::SetUniform1i(const std::string& name, int v0) {
+    GlCall(glUniform1i(GetUniformLocation(name), v0));
 }
 
 int Shader::GetUniformLocation(const std::string& name ) {
@@ -256,8 +264,8 @@ Texture::Texture(const std::string& path)
 
     GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
     GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
-    // GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP));
-    // GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP));
+    GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+    GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
     GlCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, m_buffer));
     GlCall(glBindTexture(GL_TEXTURE_2D, 0));

@@ -32,27 +32,65 @@ struct complex_number {
 mouse_state_t mouse = MOUSE_RELEASSED;
 mouse_coodenate anchor = { 0.0, 0.0 };
 mouse_coodenate delta = { 0.0, 0.0 };
+
 complex_number down_left = {-2.2, -1.5};
-double range_ = 3;
-// bool draw_request = true;
+
+mouse_coodenate cursor_screen = { 0.0, 0.0 };
+complex_number cursor_selection = {0.0, 0.0};
+
 int draw_request = 2;
 bool hover = false;
 
-int width = 1000;
+int width = 2000;
 int height = 1000;
+
+// double aspect_ratio = ((double)height / (double)width);
+double aspect_ratio = 1;
+
+double range_x = 3;
+double range_y = range_x * aspect_ratio;
+
+static complex_number get_complex_num_from_coordanate(mouse_coodenate& point,
+                                                      complex_number& down_left,
+                                                      double range_x,
+                                                      double width,
+                                                      double aspect_ratio) {
+
+    double range_y = range_x * aspect_ratio;
+    double height = width * aspect_ratio;
+
+
+    return complex_number { down_left.real + (point.x * range_x)/width,
+                            down_left.imaginary + (point.y * range_y)/height };
+
+}
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
     if(!hover){
         switch (mouse) {
             case MOUSE_JUST_CLICKED:
+                // std::cout << "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa " << std::endl;
+
                 anchor = {xpos, ypos};
                 mouse = MOUSE_CLICKED;
                 break;
             case MOUSE_CLICKED:
                 delta = { xpos - anchor.x, ypos - anchor.y};
                 if (delta.x != 0 || delta.y != 0 ){
-                    down_left.real = down_left.real - (range_ * delta.x)/width;
-                    down_left.imaginary = down_left.imaginary + (range_ * delta.y)/height;
+                    // down_left.real = down_left.real - (range_x * delta.x)/width;
+                    // down_left.imaginary = down_left.imaginary + (range_y * delta.y)/height;
+
+                    // cursor_selection.real = cursor_selection.real - (range_x * delta.x)/width;
+                    // cursor_selection.imaginary = cursor_selection.imaginary + (range_y * delta.y)/height;
+
+                    cursor_screen = {cursor_screen.x + delta.x, cursor_screen.y - delta.y};
+
+                    cursor_selection = get_complex_num_from_coordanate(cursor_screen,
+                                                                       down_left,
+                                                                       range_x,
+                                                                       width/2,
+                                                                       aspect_ratio);
+
                     anchor = {xpos, ypos};
                     draw_request = 1;
                 }
@@ -74,6 +112,12 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
         std::cout << "click " << std::endl;
+
+        if (!hover){
+            double xpos, ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            cursor_screen = {xpos, height - ypos};
+        }
         mouse = MOUSE_JUST_CLICKED;
     }else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
         // std::cout << "rele " << std::endl;
@@ -85,13 +129,15 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
 
   if (yoffset > 0){
-      range_ /=2;
-      down_left = { down_left.real + range_/2, down_left.imaginary + range_/2};
+      range_x /= 2;
+      range_y /= 2;
+      down_left = { down_left.real + range_x/2, down_left.imaginary + range_y/2};
       draw_request = 2;
 
   }else if (yoffset < 0) {
-      range_ *=2;
-      down_left = { down_left.real - range_/4, down_left.imaginary - range_/4};
+      range_x *=2;
+      range_y *=2;
+      down_left = { down_left.real - range_x/4, down_left.imaginary - range_y/4};
       draw_request = 2;
   }
 }
@@ -218,26 +264,28 @@ int main(void) {
 
     {
 
-        float positions[] = {
-            -1.0, -1.0,
-            1.0, -1.0,
-            1.0, 1.0,
-            -1.0, 1.0
+        float left_half_positions[] = {
+            0.0,                0.0,
+            ((float) width)/2,  0.0,
+            ((float) width)/2,  (float) height,
+            0.0,                (float) height
         };
 
-        // float logo_size = 100;
-        // // float logo_aspect = 18.0/43.0;
-        // float logo_aspect = 1;
-        // float logo_origin[] = {0.0F, 0.0F}; // x,y
+        float right_half_positions[] = {
+            ((float) width)/2,  0.0,
+            ((float) width),    0.0,
+            ((float) width),    (float) height,
+            ((float) width)/2,  (float) height
+        };
 
-        // float logo_positions[] = {
-        //     logo_origin[0],                 logo_origin[1],                             0.0, 0.0,    // 0
-        //     logo_origin[0] + logo_size,     logo_origin[1],                             1.0, 0.0,    // 1
-        //     logo_origin[0] + logo_size,     logo_origin[1] + logo_aspect * logo_size,   1.0, 1.0,    // 2
-        //     logo_origin[0],                 logo_origin[1] + logo_aspect * logo_size,    0.0, 1.0    // 3
-        // };
+        float full_screen_positions[] = {
+            0.0,                0.0,
+            ((float) width),    0.0,
+            ((float) width),    (float) height,
+            0.0,                (float) height
+        };
 
-
+        float logo_scale = 0.3;
         float logo_positions[] = {
             0,      0,      0.0,    0.0,    // 0
             430,    0,      1.0,    0.0,    // 1
@@ -245,25 +293,11 @@ int main(void) {
             0,      180,    0.0,    1.0     // 3
         };
 
-        float logo_scale = 0.3;
-
-
-        // float logo_positions[] = {
-        //     0,       0,     0.0, 0.0,    // 0
-        //     430,     0,     1.0, 0.0,    // 1
-        //     430,     180,   1.0, 1.0,    // 2
-        //     0,       180,   0.0, 1.0    // 3
-        // };
-
-        float cursor_origin[] = {0.0, 0.0}; // x,y
-        float cursor_size = 0.02;
-        float cursor_aspect = 0.86603;
-
-
+        float cursor_scale = 0.1;
         float cursor_position[] = {
-            cursor_origin[0] + cursor_size/2,   cursor_aspect * cursor_size,   // 1
-            cursor_origin[0] + cursor_size,     cursor_origin[1],   // 2
-            cursor_origin[0],                   cursor_origin[1]    // 3
+            25,     43.03,   // 1
+            50,     0,       // 2
+            0,      0        // 3
         };
 
         uint indices[] =
@@ -273,19 +307,29 @@ int main(void) {
         uint cursor_indices[] =
         { 0, 1, 2};
 
+        GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
         VertexBufferLayout layout;
         layout.Push<float>(2);
-
-        GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
         VertexBufferLayout texture_layout;
         texture_layout.Push<float>(2);
         texture_layout.Push<float>(2);
 
-        VertexArray va;
-        VertexBuffer vb(positions, 8 * sizeof(float));
-        va.AddBuffer(vb, layout);
-        IndexBuffer ib(indices, 6);
+        VertexArray left_half_va;
+        VertexBuffer left_half_vb(left_half_positions, 8 * sizeof(float));
+        left_half_va.AddBuffer(left_half_vb, layout);
+        IndexBuffer left_half_ib(indices, 6);
+
+        VertexArray right_half_va;
+        VertexBuffer right_half_vb(right_half_positions, 8 * sizeof(float));
+        right_half_va.AddBuffer(right_half_vb, layout);
+        IndexBuffer right_half_ib(indices, 6);
+
+        VertexArray full_screen_va;
+        VertexBuffer full_screen_vb(full_screen_positions, 8 * sizeof(float));
+        full_screen_va.AddBuffer(full_screen_vb, layout);
+        IndexBuffer full_screen_ib(indices, 6);
 
         VertexArray va_cursor;
         VertexBuffer vb_cursor(cursor_position, 6 * sizeof(float));
@@ -297,6 +341,8 @@ int main(void) {
         va_texture.AddBuffer(vb_texture, texture_layout);
         IndexBuffer ib_texture(indices, 6);
 
+        glm::mat4 proj_screen = glm::ortho(0.0, (double) width, 0.0, (double) height, 0.0, 2.0);
+        glm::mat4 proj_cursor = glm::ortho(0.0, (double) width/cursor_scale, 0.0, (double) height/cursor_scale, 0.0, 2.0);
 
         glm::mat4 proj = glm::ortho(0.0, (double) width/logo_scale, 0.0, (double) height/logo_scale, 0.0, 2.0);
         glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(10,10,0));
@@ -310,10 +356,13 @@ int main(void) {
 
         double_precision_shader.Bind();
         double_precision_shader.SetUniform2ui("screen_resolution", width, height);
+        double_precision_shader.SetUniformMat4f("u_MVP", proj_screen);
         double_precision_low_res.Bind();
         double_precision_low_res.SetUniform2ui("screen_resolution", width, height);
+        double_precision_low_res.SetUniformMat4f("u_MVP", proj_screen);
         single_precision_shader.Bind();
-        single_precision_shader.SetUniform2ui("screen_resolution", width, height);
+        single_precision_shader.SetUniform2ui("screen_resolution", width/2, height);
+        single_precision_shader.SetUniformMat4f("u_MVP", proj_screen);
         single_precision_shader.SetUniform1ui("mode_", 0);
 
         texture_shader.Bind();
@@ -321,6 +370,11 @@ int main(void) {
         opengl_logo_texture.Bind();
         texture_shader.SetUniform1i("u_texture", 0);
         texture_shader.SetUniformMat4f("u_MVP", mvp);
+
+
+        pointer_shader.Bind();
+        pointer_shader.SetUniformMat4f("u_MVP", proj_cursor);
+
 
         Renderer renderer;
 
@@ -344,19 +398,21 @@ int main(void) {
             if (draw_request){
                 draw_request--;
                 renderer.Clear();
-                std::cout << "aaa" << std::endl;
+                // std::cout << "aaa" << std::endl;
 
-                if (range_ < 0.000023) {
+                if (range_x < 0.000023) {
                   if(mouse != MOUSE_RELEASSED){
                       double_precision_low_res.Bind();
                       double_precision_low_res.SetUniform2d("down_left", down_left.real, down_left.imaginary);
-                      double_precision_low_res.SetUniform1d("range_", range_);
-                      renderer.Draw(va, ib, double_precision_low_res);
+                      double_precision_low_res.SetUniform1d("range_x", range_x);
+                      double_precision_low_res.SetUniform1d("range_y", range_y);
+                      renderer.Draw(left_half_va, left_half_ib, double_precision_low_res);
                   }else{
                       double_precision_shader.Bind();
                       double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
-                      double_precision_shader.SetUniform1d("range_", range_);
-                      renderer.Draw(va, ib, double_precision_shader);
+                      double_precision_shader.SetUniform1d("range_x", range_x);
+                      double_precision_shader.SetUniform1d("range_y", range_y);
+                      renderer.Draw(left_half_va, left_half_ib, double_precision_shader);
                   }
                 }else{
                     // double_precision_shader.Bind();
@@ -364,24 +420,36 @@ int main(void) {
                     // double_precision_shader.SetUniform1d("range_", range_);
                     // renderer.Draw(va, ib, double_precision_shader);
                     single_precision_shader.Bind();
+                    single_precision_shader.SetUniform1ui("mode_", 0);
                     single_precision_shader.SetUniform2f("down_left", (float) down_left.real, (float) down_left.imaginary);
-                    single_precision_shader.SetUniform1f("range_", (float) range_);
-                    renderer.Draw(va, ib, single_precision_shader);
+                    single_precision_shader.SetUniform1f("range_x", (float) range_x);
+                    single_precision_shader.SetUniform1f("range_y", (float) range_y);
+                    renderer.Draw(left_half_va, left_half_ib, single_precision_shader);
+
+                    single_precision_shader.SetUniform1ui("mode_", 1);
+                    single_precision_shader.SetUniform2f("c", (float) cursor_selection.real, (float) cursor_selection.imaginary);
+                    renderer.Draw(right_half_va, right_half_ib, single_precision_shader);
+
                 }
 
                 GlCall(glEnable(GL_BLEND));
+
+                glm::mat4 result = proj_cursor * glm::translate(glm::mat4(1.0), glm::vec3(cursor_screen.x/cursor_scale, (cursor_screen.y/cursor_scale), 0));
+                pointer_shader.Bind();
+                pointer_shader.SetUniformMat4f("u_MVP", result);
                 renderer.Draw(va_cursor, ib_cursor, pointer_shader);
+
+
+
+
                 renderer.Draw(va_texture, ib_texture, texture_shader);
                 GlCall(glDisable(GL_BLEND));
 
-                // just_rendered = true;
-                // draw_request = false;
             } else {
                 usleep(10000);
             }
 
-
-            std::cout << hover << std::endl;
+            std::cout << cursor_screen.x << ":" << cursor_screen.y << "   " << cursor_selection.real << ":" << cursor_selection.imaginary  << std::endl;
 
 
 

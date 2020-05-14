@@ -2,10 +2,11 @@
 #version 400 core
 
 layout(location = 0) in vec4 position;
+uniform mat4 u_MVP;
 
 void main()
 {
-    gl_Position = position;
+    gl_Position = u_MVP * position;
 };
 
 #shader fragment
@@ -15,7 +16,8 @@ void main()
 
 layout(location = 0) out vec4 color;
 uniform dvec2 down_left;
-uniform double range_;
+uniform double range_x;
+uniform double range_y;
 uniform uvec2 screen_resolution;
 
 double magnetude(in dvec2 c_num){
@@ -55,8 +57,8 @@ int mandebrot_set_degree(in dvec2 candidate, in int max_steps, in float threshol
 void main()
 {
     dvec2 imaginary_number;
-    imaginary_number.x = down_left.x + (range_*gl_FragCoord.x)/screen_resolution.x;
-    imaginary_number.y = down_left.y + (range_*gl_FragCoord.y)/screen_resolution.y;
+    imaginary_number.x = down_left.x + (range_x*gl_FragCoord.x)/screen_resolution.x;
+    imaginary_number.y = down_left.y + (range_y*gl_FragCoord.y)/screen_resolution.y;
 
     float mandebrot;
 

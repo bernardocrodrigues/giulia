@@ -12,7 +12,7 @@ void main()
 #shader fragment
 #version 400 core
 
-#define iter 1024
+#define iter 32
 
 layout(location = 0) out vec4 color;
 uniform vec2 down_left;

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <array>
 #include <chrono>
+#include <thread>
 
 int main(int argc, char *argv[]) {
 
@@ -12,8 +13,8 @@ int main(int argc, char *argv[]) {
     auto device = program.getInfo<CL_PROGRAM_DEVICES>().front();
     cl_int err = 0;
 
-    const int rows = 10000;
-    const int cols = 10000;
+    const int rows = 100;
+    const int cols = 100;
     const int total = rows * cols;
 
     static std::array<std::array<int,cols>,rows> arr;
@@ -32,13 +33,23 @@ int main(int argc, char *argv[]) {
     cl::CommandQueue queue(context, device);
     queue.enqueueWriteBuffer(buffer, CL_TRUE, 0, total, arr.data());
     auto start = std::chrono::high_resolution_clock::now();
-    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(cols,rows), cl::NDRange(1,workgroup_size));
+    queue.enqueueNDRangeKernel(kernel, cl::NullRange, cl::NDRange(cols,rows), cl::NDRange(1,10));
+
     queue.enqueueReadBuffer(buffer, CL_TRUE, 0, sizeof(int) * total, arr.data());
-    cl::finish();
+    // cl::finish();
 
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
-    std::cout << "Elapsed time: " << elapsed.count() << " s\n";
+    std::cout << "Elapsed time: " << elapsed.count() << " s\n" ;
+
+
+    for(int i = 0; i < rows; i++){
+        for(int j = 0; j < cols; j++){
+            std::cout << arr[i][j] << " ";
+        }
+        std::cout << std::endl;
+    }
+
 
     return 0;
 }

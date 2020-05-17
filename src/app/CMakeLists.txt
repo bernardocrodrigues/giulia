@@ -51,6 +51,6 @@ target_include_directories(GLFWtest PUBLIC
                           )
 
 include_directories(${GLFW_INCLUDE_DIRS})
-target_link_libraries(GLFWtest ${GLEW_LIBRARIES} ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES} GLUtils ImGUI)
+target_link_libraries(GLFWtest ${GLEW_LIBRARIES} ${GLFW_LIBRARIES} ${OPENGL_LIBRARIES} CLUtils OpenCL GLUtils ImGUI)
 # target_link_libraries(GLFWtest GLUtils)
 

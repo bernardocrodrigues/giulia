@@ -1,10 +1,17 @@
+
+
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
+
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <signal.h>
 #include <unistd.h>
+
+#include "clutils.hpp"
+#include <CL/cl2.hpp>
+
+
 #include "glutils.hpp"
 #include "glm.hpp"
 #include "gtc/matrix_transform.hpp"
@@ -12,6 +19,13 @@
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
+
+#define GLFW_EXPOSE_NATIVE_X11
+#define GLFW_EXPOSE_NATIVE_GLX
+
+#include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
+
 
 typedef enum {
     MOUSE_RELEASSED,
@@ -58,7 +72,6 @@ static complex_number get_complex_num_from_coordanate(mouse_coodenate& point,
 
     double range_y = range_x * aspect_ratio;
     double height = width * aspect_ratio;
-
 
     return complex_number { down_left.real + (point.x * range_x)/width,
                             down_left.imaginary + (point.y * range_y)/height };
@@ -239,6 +252,47 @@ int main(void) {
         std::cout << "GLEW ERROR!" << std::endl;
     }
 
+
+    cl_int err = 0;
+    auto program = create_program("src/cl/kernels/fractal.cl",
+                                  (cl_context_properties)glfwGetGLXContext(window),
+                                  (cl_context_properties)glfwGetX11Display());
+
+    auto context = program.getInfo<CL_PROGRAM_CONTEXT>();
+    auto device = program.getInfo<CL_PROGRAM_DEVICES>().front();
+    cl::Kernel kernel(program, "Fractal", &err);
+
+
+    // context = clCreateContext(props,1,&device,0,0,NULL);
+    // queue = clCreateCommandQueue(context,device,CL_QUEUE_PROFILING_ENABLE,NULL);
+
+    std::cout << err << std::endl;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // Setup Dear ImGui context
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
@@ -302,7 +356,7 @@ int main(void) {
 
         uint indices[] =
         { 0, 1, 2,
-        2, 3, 0 };
+          2, 3, 0 };
 
         uint cursor_indices[] =
         { 0, 1, 2};
@@ -366,11 +420,49 @@ int main(void) {
         single_precision_shader.SetUniform1ui("mode_", 0);
 
         texture_shader.Bind();
-        Texture opengl_logo_texture("res/opengl_logo.png");
-        opengl_logo_texture.Bind();
+        // Texture opengl_logo_texture("res/opengl_logo.png");
+        // opengl_logo_texture.Bind();
         texture_shader.SetUniform1i("u_texture", 0);
         texture_shader.SetUniformMat4f("u_MVP", mvp);
 
+        cl::CommandQueue queue(context, device);
+        cl_int errCode;
+        Texture cl_texture(100, 100, 10);
+        // cl_mem mem = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, cl_texture.GetRenderId() ,NULL);
+        cl::ImageGL tex( context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, cl_texture.GetRenderId() ,&errCode);
+        // cl_texture.Unbind();
+
+        std::cout << err << std::endl;
+
+
+        glFinish();
+        cl::Event ev;
+        std::vector<cl::Memory> objs;
+        objs.clear();
+        objs.push_back(tex);
+        cl_int res = queue.enqueueAcquireGLObjects(&objs, NULL, &ev);
+        ev.wait();
+        if (res!=CL_SUCCESS) {
+            std::cout<<"Failed acquiring GL object: "<<res<<std::endl;
+            exit(248);
+        }
+
+        // cl::NDRange local(16, 16);
+        // cl::NDRange global(100, 100);
+
+        // cl::ImageGL 
+
+        // kernel.setArg(0, tex);
+        // queue.enqueueNDRangeKernel(kernel, cl::NullRange, global, local);
+        // queue.finish();
+
+        // glFinish();
+        // queue.enqueueAcquireGLObjects(&objs, NULL, &ev);
+        // kernel.setArg(0, tex);
+        // queue.enqueueNDRangeKernel(kernel, cl::NullRange, global, local);
+        // queue.enqueueReleaseGLObjects(&objs, NULL, &ev);
+        // glFinish();
+        // queue.finish();
 
         pointer_shader.Bind();
         pointer_shader.SetUniformMat4f("u_MVP", proj_cursor);
@@ -382,11 +474,11 @@ int main(void) {
         int nbFrames = 0;
 
 
-        bool show_demo_window = true;
-        bool show_another_window = false;
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        // bool show_demo_window = true;
+        // bool show_another_window = false;
+        // ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-        bool just_rendered = false;
+        // bool just_rendered = false;
 
         /* Loop until the user closes the window */
         while (!glfwWindowShouldClose(window))
@@ -394,64 +486,71 @@ int main(void) {
             GlCall(glfwPollEvents());
 
 
-            // /* Render here */
-            if (draw_request){
-                draw_request--;
-                renderer.Clear();
-                // std::cout << "aaa" << std::endl;
+            // // /* Render here */
+            // if (draw_request){
+            //     draw_request--;
+            //     renderer.Clear();
+            //     // std::cout << "aaa" << std::endl;
 
-                if (range_x < 0.000023) {
-                  if(mouse != MOUSE_RELEASSED){
-                      double_precision_low_res.Bind();
-                      double_precision_low_res.SetUniform2d("down_left", down_left.real, down_left.imaginary);
-                      double_precision_low_res.SetUniform1d("range_x", range_x);
-                      double_precision_low_res.SetUniform1d("range_y", range_y);
-                      renderer.Draw(left_half_va, left_half_ib, double_precision_low_res);
-                  }else{
-                      double_precision_shader.Bind();
-                      double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
-                      double_precision_shader.SetUniform1d("range_x", range_x);
-                      double_precision_shader.SetUniform1d("range_y", range_y);
-                      renderer.Draw(left_half_va, left_half_ib, double_precision_shader);
-                  }
-                }else{
-                    // double_precision_shader.Bind();
-                    // double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
-                    // double_precision_shader.SetUniform1d("range_", range_);
-                    // renderer.Draw(va, ib, double_precision_shader);
-                    single_precision_shader.Bind();
-                    single_precision_shader.SetUniform1ui("mode_", 0);
-                    single_precision_shader.SetUniform2f("down_left", (float) down_left.real, (float) down_left.imaginary);
-                    single_precision_shader.SetUniform1f("range_x", (float) range_x);
-                    single_precision_shader.SetUniform1f("range_y", (float) range_y);
-                    renderer.Draw(left_half_va, left_half_ib, single_precision_shader);
+            //     if (range_x < 0.000023) {
+            //       if(mouse != MOUSE_RELEASSED){
+            //           double_precision_low_res.Bind();
+            //           double_precision_low_res.SetUniform2d("down_left", down_left.real, down_left.imaginary);
+            //           double_precision_low_res.SetUniform1d("range_x", range_x);
+            //           double_precision_low_res.SetUniform1d("range_y", range_y);
+            //           renderer.Draw(left_half_va, left_half_ib, double_precision_low_res);
+            //       }else{
+            //           double_precision_shader.Bind();
+            //           double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
+            //           double_precision_shader.SetUniform1d("range_x", range_x);
+            //           double_precision_shader.SetUniform1d("range_y", range_y);
+            //           renderer.Draw(left_half_va, left_half_ib, double_precision_shader);
+            //       }
+            //     }else{
+            //         // double_precision_shader.Bind();
+            //         // double_precision_shader.SetUniform2d("down_left", down_left.real, down_left.imaginary);
+            //         // double_precision_shader.SetUniform1d("range_", range_);
+            //         // renderer.Draw(va, ib, double_precision_shader);
+            //         single_precision_shader.Bind();
+            //         single_precision_shader.SetUniform1ui("mode_", 0);
+            //         single_precision_shader.SetUniform2f("down_left", (float) down_left.real, (float) down_left.imaginary);
+            //         single_precision_shader.SetUniform1f("range_x", (float) range_x);
+            //         single_precision_shader.SetUniform1f("range_y", (float) range_y);
+            //         renderer.Draw(left_half_va, left_half_ib, single_precision_shader);
 
-                    single_precision_shader.SetUniform1ui("mode_", 1);
-                    single_precision_shader.SetUniform2f("c", (float) cursor_selection.real, (float) cursor_selection.imaginary);
-                    renderer.Draw(right_half_va, right_half_ib, single_precision_shader);
+            //         single_precision_shader.SetUniform1ui("mode_", 1);
+            //         single_precision_shader.SetUniform2f("c", (float) cursor_selection.real, (float) cursor_selection.imaginary);
+            //         renderer.Draw(right_half_va, right_half_ib, single_precision_shader);
 
-                }
+            //     }
 
-                GlCall(glEnable(GL_BLEND));
+            //     GlCall(glEnable(GL_BLEND));
 
-                glm::mat4 result = proj_cursor * glm::translate(glm::mat4(1.0), glm::vec3(cursor_screen.x/cursor_scale, (cursor_screen.y/cursor_scale), 0));
-                pointer_shader.Bind();
-                pointer_shader.SetUniformMat4f("u_MVP", result);
-                renderer.Draw(va_cursor, ib_cursor, pointer_shader);
-
-
+            //     glm::mat4 result = proj_cursor * glm::translate(glm::mat4(1.0), glm::vec3(cursor_screen.x/cursor_scale, (cursor_screen.y/cursor_scale), 0));
+            //     pointer_shader.Bind();
+            //     pointer_shader.SetUniformMat4f("u_MVP", result);
+            //     renderer.Draw(va_cursor, ib_cursor, pointer_shader);
 
 
-                renderer.Draw(va_texture, ib_texture, texture_shader);
-                GlCall(glDisable(GL_BLEND));
-
-            } else {
-                usleep(10000);
-            }
-
-            std::cout << cursor_screen.x << ":" << cursor_screen.y << "   " << cursor_selection.real << ":" << cursor_selection.imaginary  << std::endl;
 
 
+            //     renderer.Draw(va_texture, ib_texture, texture_shader);
+            //     GlCall(glDisable(GL_BLEND));
+
+            // } else {
+            //     usleep(10000);
+            // }
+
+            // std::cout << cursor_screen.x << ":" << cursor_screen.y << "   " << cursor_selection.real << ":" << cursor_selection.imaginary  << std::endl;
+
+
+            GlCall(glEnable(GL_BLEND));
+            // opengl_logo_texture.Bind();
+            // cl_texture.Bind();
+            // texture_shader.Bind();
+            // texture_shader.SetUniform1i("u_texture", 1);
+            renderer.Draw(va_texture, ib_texture, texture_shader);
+            GlCall(glDisable(GL_BLEND));
 
             render_imgui(window, hover);
 

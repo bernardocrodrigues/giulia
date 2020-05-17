@@ -142,11 +142,11 @@ class Texture{
         int m_width, m_height, m_bpp;
     public:
         Texture(const std::string& path);
+        Texture(unsigned int width, unsigned int height, unsigned int bpp);
         ~Texture();
 
         void Bind(unsigned int slot = 0) const;
         void Unbind() const;
 
-        inline int GetWidth() const { return m_width; }
-        inline int GetHeight() const { return m_height; }
+        inline int GetRenderId() const { return m_renderer; }
 };

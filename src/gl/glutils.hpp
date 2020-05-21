@@ -13,8 +13,10 @@
     ASSERT(GLCheckError(#x, __BASE_FILE__, __LINE__))
 
 
+void print_hardware_info();
 void GLClearError();
 bool GLCheckError(const char* func, const char* file, int line);
+
 
 class VertexBuffer{
     private:

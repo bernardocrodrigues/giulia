@@ -1,47 +1,22 @@
-
-
 #include <GL/glew.h>
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
 #include <signal.h>
 #include <unistd.h>
+#include "data_def.hpp"
 
 #include "clutils.hpp"
-#include <CL/cl2.hpp>
-
-
 #include "glutils.hpp"
+
 #include "glm.hpp"
 #include "gtc/matrix_transform.hpp"
-
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#define GLFW_EXPOSE_NATIVE_X11
-#define GLFW_EXPOSE_NATIVE_GLX
-
 #include <GLFW/glfw3.h>
 #include <GLFW/glfw3native.h>
-
-
-typedef enum {
-    MOUSE_RELEASSED,
-    MOUSE_JUST_CLICKED,
-    MOUSE_CLICKED
-} mouse_state_t ;
-
-struct mouse_coodenate {
-    double x;
-    double y;
-};
-
-struct complex_number {
-    double real;
-    double imaginary;
-};
 
 mouse_state_t mouse = MOUSE_RELEASSED;
 mouse_coodenate anchor = { 0.0, 0.0 };
@@ -55,8 +30,8 @@ complex_number cursor_selection = {0.0, 0.0};
 int draw_request = 2;
 bool hover = false;
 
-int width = 2000;
-int height = 1000;
+// int width = 2000;
+// int height = 1000;
 
 // double aspect_ratio = ((double)height / (double)width);
 double aspect_ratio = 1;
@@ -101,7 +76,7 @@ static void cursor_position_callback(GLFWwindow* window, double xpos, double ypo
                     cursor_selection = get_complex_num_from_coordanate(cursor_screen,
                                                                        down_left,
                                                                        range_x,
-                                                                       width/2,
+                                                                       WIDTH/2,
                                                                        aspect_ratio);
 
                     anchor = {xpos, ypos};
@@ -129,7 +104,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
         if (!hover){
             double xpos, ypos;
             glfwGetCursorPos(window, &xpos, &ypos);
-            cursor_screen = {xpos, height - ypos};
+            cursor_screen = {xpos, HEIGHT - ypos};
         }
         mouse = MOUSE_JUST_CLICKED;
     }else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
@@ -154,7 +129,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
       draw_request = 2;
   }
 }
-
 
 void render_imgui(GLFWwindow* window, bool& hover) {
 
@@ -216,9 +190,6 @@ int main(void) {
     const char* glsl_version = "#version 130";
 
     GLFWwindow* window;
-    // GLFWwindow* window2;
-
-    /* Initialize the library */
     if (!glfwInit())
         return -1;
 
@@ -226,15 +197,10 @@ int main(void) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
-    // window2 = glfwCreateWindow(width, height, "Hello World", NULL, NULL);
-    if (!window)
-    {
+    window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
+
+    if (!window) {
         glfwTerminate();
         return -1;
     }
@@ -245,12 +211,18 @@ int main(void) {
 
     glfwSwapInterval(1);
 
-    /* Make the window's context current */
     glfwMakeContextCurrent(window);
 
     if (glewInit() != GLEW_OK){
         std::cout << "GLEW ERROR!" << std::endl;
     }
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsClassic();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init(glsl_version);
 
 
     cl_int err = 0;
@@ -262,53 +234,7 @@ int main(void) {
     auto device = program.getInfo<CL_PROGRAM_DEVICES>().front();
     cl::Kernel kernel(program, "Fractal", &err);
 
-
-    // context = clCreateContext(props,1,&device,0,0,NULL);
-    // queue = clCreateCommandQueue(context,device,CL_QUEUE_PROFILING_ENABLE,NULL);
-
     std::cout << err << std::endl;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // Setup Dear ImGui context
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
-    ImGuiIO& io = ImGui::GetIO(); (void)io;
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    //io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-
-    // Setup Dear ImGui style
-    ImGui::StyleColorsClassic();
-    //ImGui::StyleColorsClassic();
-    // ImGui::SetSt().Alpha = 1;
-
-    // Setup Platform/Renderer bindings
-    ImGui_ImplGlfw_InitForOpenGL(window, true);
-    ImGui_ImplOpenGL3_Init(glsl_version);
-
 
     auto gl_vendor = glGetString(GL_VENDOR);
     auto gl_renderer = glGetString(GL_RENDERER);
@@ -317,49 +243,6 @@ int main(void) {
     std::cout << "Using OpenGL: \nVendor: " << gl_vendor << "\nRenderer: " << gl_renderer << "\nOpenGL Version: " << gl_version << "\nShader Lang: "<< gl_lang << std::endl;
 
     {
-
-        float left_half_positions[] = {
-            0.0,                0.0,
-            ((float) width)/2,  0.0,
-            ((float) width)/2,  (float) height,
-            0.0,                (float) height
-        };
-
-        float right_half_positions[] = {
-            ((float) width)/2,  0.0,
-            ((float) width),    0.0,
-            ((float) width),    (float) height,
-            ((float) width)/2,  (float) height
-        };
-
-        float full_screen_positions[] = {
-            0.0,                0.0,
-            ((float) width),    0.0,
-            ((float) width),    (float) height,
-            0.0,                (float) height
-        };
-
-        float logo_scale = 0.3;
-        float logo_positions[] = {
-            0,      0,      0.0,    0.0,    // 0
-            430,    0,      1.0,    0.0,    // 1
-            430,    180,    1.0,    1.0,    // 2
-            0,      180,    0.0,    1.0     // 3
-        };
-
-        float cursor_scale = 0.1;
-        float cursor_position[] = {
-            25,     43.03,   // 1
-            50,     0,       // 2
-            0,      0        // 3
-        };
-
-        uint indices[] =
-        { 0, 1, 2,
-          2, 3, 0 };
-
-        uint cursor_indices[] =
-        { 0, 1, 2};
 
         GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
 
@@ -395,10 +278,10 @@ int main(void) {
         va_texture.AddBuffer(vb_texture, texture_layout);
         IndexBuffer ib_texture(indices, 6);
 
-        glm::mat4 proj_screen = glm::ortho(0.0, (double) width, 0.0, (double) height, 0.0, 2.0);
-        glm::mat4 proj_cursor = glm::ortho(0.0, (double) width/cursor_scale, 0.0, (double) height/cursor_scale, 0.0, 2.0);
+        glm::mat4 proj_screen = glm::ortho(0.0, (double) WIDTH, 0.0, (double) HEIGHT, 0.0, 2.0);
+        glm::mat4 proj_cursor = glm::ortho(0.0, (double) WIDTH/cursor_scale, 0.0, (double) HEIGHT/cursor_scale, 0.0, 2.0);
 
-        glm::mat4 proj = glm::ortho(0.0, (double) width/logo_scale, 0.0, (double) height/logo_scale, 0.0, 2.0);
+        glm::mat4 proj = glm::ortho(0.0, (double) WIDTH/logo_scale, 0.0, (double) HEIGHT/logo_scale, 0.0, 2.0);
         glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(10,10,0));
         glm::mat4 mvp = proj * view;
 
@@ -409,13 +292,13 @@ int main(void) {
         Shader texture_shader("src/gl/shaders/texture.shader");
 
         double_precision_shader.Bind();
-        double_precision_shader.SetUniform2ui("screen_resolution", width, height);
+        double_precision_shader.SetUniform2ui("screen_resolution", WIDTH, HEIGHT);
         double_precision_shader.SetUniformMat4f("u_MVP", proj_screen);
         double_precision_low_res.Bind();
-        double_precision_low_res.SetUniform2ui("screen_resolution", width, height);
+        double_precision_low_res.SetUniform2ui("screen_resolution", WIDTH, HEIGHT);
         double_precision_low_res.SetUniformMat4f("u_MVP", proj_screen);
         single_precision_shader.Bind();
-        single_precision_shader.SetUniform2ui("screen_resolution", width/2, height);
+        single_precision_shader.SetUniform2ui("screen_resolution", WIDTH/2, HEIGHT);
         single_precision_shader.SetUniformMat4f("u_MVP", proj_screen);
         single_precision_shader.SetUniform1ui("mode_", 0);
 
@@ -434,26 +317,37 @@ int main(void) {
 
         std::cout << err << std::endl;
 
+        try {
 
-        glFinish();
-        cl::Event ev;
-        std::vector<cl::Memory> objs;
-        objs.clear();
-        objs.push_back(tex);
-        cl_int res = queue.enqueueAcquireGLObjects(&objs, NULL, &ev);
-        ev.wait();
-        if (res!=CL_SUCCESS) {
-            std::cout<<"Failed acquiring GL object: "<<res<<std::endl;
-            exit(248);
-        }
+            glFinish();
+            cl::Event ev;
+            std::vector<cl::Memory> objs;
+            objs.clear();
+            objs.push_back(tex);
+            cl_int res = queue.enqueueAcquireGLObjects(&objs, NULL, &ev);
+            ev.wait();
+            if (res!=CL_SUCCESS) {
+                std::cout<<"Failed acquiring GL object: "<<res<<std::endl;
+                exit(248);
+            }
 
-        // cl::NDRange local(16, 16);
-        // cl::NDRange global(100, 100);
+            cl::NDRange local(10, 10);
+            cl::NDRange global(100, 100);
 
-        // cl::ImageGL 
 
-        // kernel.setArg(0, tex);
-        // queue.enqueueNDRangeKernel(kernel, cl::NullRange, global, local);
+            kernel.setArg(0, tex);
+            queue.enqueueNDRangeKernel(kernel, cl::NullRange, global, local);
+
+            queue.enqueueReleaseGLObjects(&objs);
+            ev.wait();
+            if (res!=CL_SUCCESS) {
+                std::cout<<"Failed releasing GL object: "<<res<<std::endl;
+                exit(247);
+            }
+            queue.finish();
+            } catch(cl::Error err) {
+        std::cout << err.what() << "(" << err.err() << ")" << std::endl;
+    }
         // queue.finish();
 
         // glFinish();
@@ -544,13 +438,13 @@ int main(void) {
             // std::cout << cursor_screen.x << ":" << cursor_screen.y << "   " << cursor_selection.real << ":" << cursor_selection.imaginary  << std::endl;
 
 
-            GlCall(glEnable(GL_BLEND));
+            // GlCall(glEnable(GL_BLEND));
             // opengl_logo_texture.Bind();
-            // cl_texture.Bind();
+            cl_texture.Bind();
             // texture_shader.Bind();
             // texture_shader.SetUniform1i("u_texture", 1);
             renderer.Draw(va_texture, ib_texture, texture_shader);
-            GlCall(glDisable(GL_BLEND));
+            // GlCall(glDisable(GL_BLEND));
 
             render_imgui(window, hover);
 
@@ -570,6 +464,8 @@ int main(void) {
         // glfwSwapBuffers(window);
         }
     }
+    // glfwDestroyWindow(window);
+
     glfwTerminate();
     return 0;
 }

@@ -2,8 +2,21 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include "log.hpp"
 #include "glutils.hpp"
 #include "stb_image.h"
+
+void print_hardware_info() {
+    auto gl_vendor = glGetString(GL_VENDOR);
+    auto gl_renderer = glGetString(GL_RENDERER);
+    auto gl_version = glGetString(GL_VERSION);
+    auto gl_lang = glGetString(GL_SHADING_LANGUAGE_VERSION);
+
+    LOG_INFO("OpenGL Info \n       Vendor: " << gl_vendor <<
+             "\n       Renderer:" << gl_renderer <<
+             "\n       OpenGL Version:" << gl_version <<
+             "\n       Shader Lang:" << gl_lang);
+}
 
 void GLClearError(){
     while (glGetError());
@@ -289,6 +302,7 @@ Texture::Texture(unsigned int width, unsigned int height, unsigned int bpp)
     GlCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
 
     GlCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, m_width, m_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr));
+    // GlCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_width, m_height, 0, GL_RGBA, GL_FLOAT, nullptr));
     GlCall(glGenerateMipmap(GL_TEXTURE_2D));
     GlCall(glBindTexture(GL_TEXTURE_2D, 0));
 

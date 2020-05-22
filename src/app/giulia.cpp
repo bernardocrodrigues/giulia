@@ -29,6 +29,8 @@ int main() {
         WindowHandler->poll_events();
         WindowHandler->render_imgui();
         WindowHandler->swap_buffers();
+
+        LOG_INFO( "Mode: " << (WindowHandler->get_selected_compute_mode() == Window::OPENGL_MODE ? "OpenGL" : "OpenCL"));
     }
 
     return 0;

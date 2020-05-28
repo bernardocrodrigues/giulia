@@ -4,16 +4,12 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include "window_exceptions.hpp"
+#include "data_def.hpp"
 #include <memory>
 
 namespace Window {
 
 class Pimpl;
-
-typedef enum {
-  OPENGL_MODE,
-  OPENCL_MODE
-} compute_mode_t;
 
 class Handler {
  public:

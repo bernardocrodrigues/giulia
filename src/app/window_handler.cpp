@@ -38,9 +38,9 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS){
 
         if(pimpl_->imgui_focus){
-            LOG_INFO("Mouse press at " << xpos << "x" << (HEIGHT - ypos) << "[Inside ImGUI]");
+            LOG_INFO_WITH_CONTEXT("Mouse press at " << xpos << "x" << (HEIGHT - ypos) << "[Inside ImGUI Window]");
         } else {
-            LOG_INFO("Mouse press at " << xpos << "x" << (HEIGHT - ypos));
+            LOG_INFO_WITH_CONTEXT("Mouse press at " << xpos << "x" << (HEIGHT - ypos));
         }
 
         // if (!hover){
@@ -48,7 +48,7 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action, in
         // }
         // mouse = MOUSE_JUST_CLICKED;
     }else if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
-        LOG_INFO("Mouse release at " << xpos << "x" << (HEIGHT - ypos));
+        LOG_INFO_WITH_CONTEXT("Mouse release at " << xpos << "x" << (HEIGHT - ypos));
 
         // mouse = MOUSE_RELEASSED;
         // draw_request = 2;
@@ -146,11 +146,13 @@ void Handler::render_imgui() {
             opengl_old = opengl;
             if (opengl) {
                 pimpl_->compute_mode = OPENGL_MODE;
+                LOG_INFO_WITH_CONTEXT("OPENGL_MODE");
                 if (opencl)
                     opencl = false;
             } else {
                 if (!opencl) {
                     pimpl_->compute_mode = OPENCL_MODE;
+                    LOG_INFO_WITH_CONTEXT("OPENCL_MODE");
                     opencl = true;
                 }
             }
@@ -160,11 +162,13 @@ void Handler::render_imgui() {
             opencl_old = opencl;
             if (opencl) {
                 pimpl_->compute_mode = OPENCL_MODE;
+                LOG_INFO_WITH_CONTEXT("OPENCL_MODE");
                 if (opengl)
                     opengl = false;
             } else {
                 if (!opengl){
                     pimpl_->compute_mode = OPENGL_MODE;
+                    LOG_INFO_WITH_CONTEXT("OPENGL_MODE");
                     opengl = true;
                 }
             }

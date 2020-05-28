@@ -59,7 +59,7 @@ find_package(GLEW REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_search_module(GLFW REQUIRED glfw3)
 
-add_executable(Giulia giulia.cpp window_handler.cpp)
+add_executable(Giulia giulia.cpp window_handler.cpp renderer.cpp)
 
 target_compile_options(Giulia PRIVATE -Wall -Wextra -Wpedantic)
 

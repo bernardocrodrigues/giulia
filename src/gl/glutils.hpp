@@ -1,4 +1,7 @@
 
+#ifndef GLUTILS_H
+#define GLUTILS_H
+
 #include <signal.h>
 #include <vector>
 #include <GL/glew.h>
@@ -130,11 +133,25 @@ class Shader{
 
 };
 
-class Renderer{
-    public:
-        void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
-        void Clear() const;
-};
+// class Renderer{
+//     public:
+//         void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
+//         void Clear() const;
+//         Renderer();
+//         ~Renderer();
+//     private:
+//         VertexBufferLayout layout;
+//         VertexBufferLayout texture_layout;
+
+//         // VertexArray left_half_va;
+//         // VertexBuffer left_half_vb;
+
+//         // VertexArray va_texture;
+//         // VertexBuffer vb_texture;
+
+
+
+// };
 
 class Texture{
     private:
@@ -152,3 +169,5 @@ class Texture{
 
         inline int GetRenderId() const { return m_renderer; }
 };
+
+#endif

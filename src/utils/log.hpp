@@ -19,19 +19,24 @@ namespace logging {
 #define BOLDCYAN "\033[1m\033[36m"    /* Bold Cyan */
 #define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
 
-#define LOG_ERROR(msg)                   \
-  (Log(__FILE__, __LINE__,               \
-       logging::LogData<logging::None>() \
-           << BOLDRED << "[ERROR] " << RESET << msg ))
+#define LOG_INFO(msg)                    \
+  (Log(logging::LogData<logging::None>() \
+       << BOLDWHITE << "[INFO] " << msg << RESET))
 
-#define LOG_INFO(msg)                   \
-  (Log( logging::LogData<logging::None>() \
-           << BOLDWHITE << "[INFO] " << RESET << msg ))
+#define LOG_INFO_WITH_CONTEXT(msg)                      \
+  (Log(logging::LogData<logging::None>()                \
+       << BOLDWHITE << "[INFO] " << msg << RESET << " " \
+       << __PRETTY_FUNCTION__))
 
-#define LOG_WARNING(msg)                   \
-  (Log(__FILE__, __LINE__,               \
-       logging::LogData<logging::None>() \
-           << BOLDYELLOW << "[WARNING] " << RESET << msg ))
+#define LOG_WARNING(msg)                                                       \
+  (Log(logging::LogData<logging::None>()                                       \
+       << BOLDYELLOW << "[WARNING] " << msg << RESET << " " << __FILE__ << ":" \
+       << __LINE__))
+
+#define LOG_ERROR(msg)                                                    \
+  (Log(logging::LogData<logging::None>()                                  \
+       << BOLDRED << "[ERROR] " << msg << RESET << " " << __FILE__ << ":" \
+       << __LINE__))
 
 // Workaround GCC 4.7.2 not recognizing noinline attribute
 #ifndef NOINLINE_ATTRIBUTE
@@ -76,13 +81,6 @@ void output(std::ostream& os, std::pair<Begin, Last>&& data) {
 }
 
 inline void output(std::ostream& os, None) {}
-
-template <typename List>
-void Log(const char* file, int line, LogData<List>&& data) NOINLINE_ATTRIBUTE {
-  std::cout << file << ":" << line << ": ";
-  output(std::cout, std::move(data.list));
-  std::cout << std::endl;
-}
 
 template <typename List>
 void Log(LogData<List>&& data) NOINLINE_ATTRIBUTE {

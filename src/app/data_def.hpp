@@ -13,6 +13,11 @@ typedef enum {
     MOUSE_CLICKED
 } mouse_state_t ;
 
+typedef enum {
+  OPENGL_MODE,
+  OPENCL_MODE
+} compute_mode_t;
+
 struct mouse_coodenate {
     double x;
     double y;

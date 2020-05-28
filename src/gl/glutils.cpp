@@ -13,9 +13,9 @@ void print_hardware_info() {
     auto gl_lang = glGetString(GL_SHADING_LANGUAGE_VERSION);
 
     LOG_INFO("OpenGL Info \n       Vendor: " << gl_vendor <<
-             "\n       Renderer:" << gl_renderer <<
-             "\n       OpenGL Version:" << gl_version <<
-             "\n       Shader Lang:" << gl_lang);
+             "\n       Renderer: " << gl_renderer <<
+             "\n       OpenGL Version: " << gl_version <<
+             "\n       Shader Lang: " << gl_lang);
 }
 
 void GLClearError(){
@@ -253,17 +253,33 @@ int Shader::GetUniformLocation(const std::string& name ) {
     return location;
 }
 
-void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const {
+// void Renderer::Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const {
 
-    shader.Bind();
-    va.Bind();
-    ib.Bind();
-    GlCall(glDrawElements(GL_TRIANGLES, ib.getCount(), GL_UNSIGNED_INT, nullptr));
-}
+//     shader.Bind();
+//     va.Bind();
+//     ib.Bind();
+//     GlCall(glDrawElements(GL_TRIANGLES, ib.getCount(), GL_UNSIGNED_INT, nullptr));
+// }
 
-void Renderer::Clear() const {
-    GlCall(glClear(GL_COLOR_BUFFER_BIT));
-}
+// void Renderer::Clear() const {
+//     GlCall(glClear(GL_COLOR_BUFFER_BIT));
+// }
+
+// Renderer::Renderer(){
+
+//     GlCall(glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA));
+
+//     layout.Push<float>(2);
+//     texture_layout.Push<float>(2);
+//     texture_layout.Push<float>(2);
+
+
+
+// }
+
+// Renderer::~Renderer(){
+
+// }
 
 Texture::Texture(const std::string& path)
     : m_file_path(path), m_buffer(nullptr),

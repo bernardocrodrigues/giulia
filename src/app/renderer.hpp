@@ -2,30 +2,23 @@
 #define RENDERER_H
 
 #include "glutils.hpp"
+#include "data_def.hpp"
 
 namespace Renderer{
 
+class Pimpl;
 
 class Handler{
     public:
-        // void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
-        // void Clear() const;
 
-        void DrawLogo(compute_mode_t mode);
+        void Clear() const;
+        void DrawLogo(compute_mode_t& mode);
+        void Draw(window_region_t region, compute_mode_t& mode, compute_target_t target);
 
         Handler();
         ~Handler();
     private:
-        VertexBufferLayout layout;
-        VertexBufferLayout texture_layout;
-
-        // VertexArray left_half_va;
-        // VertexBuffer left_half_vb;
-
-        VertexArray     *va_texture;
-        VertexBuffer    *vb_texture;
-        IndexBuffer     *ib_texture;
-
+        Pimpl* pimpl_;
 };
 }
 

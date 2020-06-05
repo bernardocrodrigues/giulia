@@ -18,7 +18,8 @@ layout(location = 0) out vec4 color;
 uniform vec2 down_left;
 uniform vec2 c;
 
-uniform uvec2 screen_resolution;
+uniform uvec2 render_resolution;
+uniform uvec2 render_offset;
 uniform float range_x;
 uniform float range_y;
 uniform uint mode_;
@@ -61,12 +62,12 @@ void main()
     int mandebrot_num;
 
     if (mode_ == 0) {
-        z.x = down_left.x + (range_x*gl_FragCoord.x)/screen_resolution.x;
-        z.y = down_left.y + (range_y*gl_FragCoord.y)/screen_resolution.y;
+        z.x = down_left.x + (range_x*(gl_FragCoord.x - render_offset.x))/render_resolution.x;
+        z.y = down_left.y + (range_y*gl_FragCoord.y)/render_resolution.y;
         mandebrot_num = mandebrot_set_degree(z, z, iter, 4.0);
     } else {
-        z.x = down_left.x + ((range_x*gl_FragCoord.x)- screen_resolution.x * 2)/screen_resolution.x;
-        z.y = down_left.y + (range_y*gl_FragCoord.y)/screen_resolution.y;
+        z.x = down_left.x + ((range_x*gl_FragCoord.x) - render_resolution.x * 2)/render_resolution.x;
+        z.y = down_left.y + (range_y*gl_FragCoord.y)/render_resolution.y;
         mandebrot_num = mandebrot_set_degree(z, c, iter, 4.0);
     }
 

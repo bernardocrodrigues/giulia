@@ -26,6 +26,16 @@ int main() {
     print_hardware_info();
 
     while (WindowHandler->user_has_not_exited()) {
+        compute_mode_t mode = WindowHandler->get_selected_compute_mode();
+        // compute_target_t target = MANDELBROT;
+
+        Renderer->Clear();
+
+        // Renderer->Draw(LEFT, mode, MANDELBROT);
+        // Renderer->Draw(RIGHT, mode, MANDELBROT);
+        Renderer->Draw(FULL, mode, MANDELBROT);
+
+        Renderer->DrawLogo(mode);
 
         WindowHandler->poll_events();
         WindowHandler->render_imgui();

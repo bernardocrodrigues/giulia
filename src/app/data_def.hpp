@@ -18,6 +18,17 @@ typedef enum {
   OPENCL_MODE
 } compute_mode_t;
 
+typedef enum {
+  MANDELBROT,
+  JULIA
+} compute_target_t;
+
+typedef enum {
+  LEFT,
+  RIGHT,
+  FULL,
+} window_region_t;
+
 struct mouse_coodenate {
     double x;
     double y;

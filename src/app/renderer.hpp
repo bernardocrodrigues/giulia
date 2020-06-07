@@ -13,7 +13,7 @@ class Handler{
 
         void Clear() const;
         void DrawLogo(compute_mode_t& mode);
-        void Draw(window_region_t region, compute_mode_t& mode, compute_target_t target);
+        void Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position);
 
         Handler();
         ~Handler();

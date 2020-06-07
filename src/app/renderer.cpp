@@ -131,9 +131,9 @@ void Handler::DrawLogo(compute_mode_t& mode) {
     GlCall(glDisable(GL_BLEND));
 }
 
-void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_t target) {
+void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position) {
 
-    complex_number down_left = {-2.2, -1.5};
+    // complex_number down_left = {-2.2, -1.5};
 
     double aspect_ratio = 1;
 
@@ -144,7 +144,7 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
 
     pimpl_->single_precision_shader->Bind();
     pimpl_->single_precision_shader->SetUniform1ui("mode_", 0);
-    pimpl_->single_precision_shader->SetUniform2f("down_left", (float) down_left.real, (float) down_left.imaginary);
+    pimpl_->single_precision_shader->SetUniform2f("down_left", (float) position.real, (float) position.imaginary);
     pimpl_->single_precision_shader->SetUniform1f("range_x", (float) range_x);
     pimpl_->single_precision_shader->SetUniform1f("range_y", (float) range_y);
     pimpl_->single_precision_shader->SetUniform2ui("render_resolution", WIDTH/2, HEIGHT);

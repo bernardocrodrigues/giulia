@@ -31,15 +31,22 @@ int main() {
 
         Renderer->Clear();
 
+        complex_number aux = WindowHandler->get_left_position();
+        complex_number aux2 = WindowHandler->get_right_position();
         // Renderer->Draw(LEFT, mode, MANDELBROT);
         // Renderer->Draw(RIGHT, mode, MANDELBROT);
-        Renderer->Draw(FULL, mode, MANDELBROT);
+
+        Renderer->Draw(LEFT, mode, MANDELBROT, aux);
+        Renderer->Draw(RIGHT, mode, MANDELBROT, aux2);
 
         Renderer->DrawLogo(mode);
 
         WindowHandler->poll_events();
         WindowHandler->render_imgui();
         WindowHandler->swap_buffers();
+
+
+        LOG_INFO("X: " << aux.real << "Y: " << aux.imaginary);
 
     }
 

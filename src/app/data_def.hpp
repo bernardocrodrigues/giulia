@@ -68,11 +68,12 @@ const float logo_positions[] = {
     0,      180,    0.0,    1.0     // 3
 };
 
-const float cursor_scale = 0.1;
+const float cursor_scale = 0.5;
 const float cursor_position[] = {
     25,     43.03,   // 1
     50,     0,       // 2
-    0,      0        // 3
+    25,     14.43,   // 3
+    0,      0        // 4
 };
 
 const unsigned int indices[] =
@@ -80,6 +81,6 @@ const unsigned int indices[] =
     2, 3, 0 };
 
 const unsigned int cursor_indices[] =
-{ 0, 1, 2};
+{ 3, 2, 0, 3, 2, 1};
 
 #endif

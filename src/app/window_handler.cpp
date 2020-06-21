@@ -17,7 +17,7 @@ class Pimpl {
         compute_mode_t compute_mode;
 
         mouse_state_t mouse;
-        mouse_coodenate cursor_position;
+        mouse_coodenate mouse_position;
         mouse_coodenate anchor;
         window_region_t selected_window;
 
@@ -26,6 +26,7 @@ class Pimpl {
 
         complex_number position_on_left_window;
         complex_number position_on_right_window;
+        complex_number cursor_position;
         double range_x;
         float aspect_ratio;
 
@@ -49,28 +50,38 @@ static void glfw_error_callback(int error, const char* desc) {
     fputs(desc,stderr);
 }
 
-static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    (void) mods;
-    double xpos, ypos;
-    Pimpl *pimpl_ = reinterpret_cast<Pimpl*>(glfwGetWindowUserPointer(window));
+static void mouse_button_callback(GLFWwindow* window, int button, int action,
+                                  int mods) {
+  (void)mods;
+  double xpos, ypos;
+  Pimpl* pimpl_ = reinterpret_cast<Pimpl*>(glfwGetWindowUserPointer(window));
 
-    if (!pimpl_->imgui_focus && pimpl_->pan) {
-        if (button == GLFW_MOUSE_BUTTON_LEFT){
-            glfwGetCursorPos(window, &xpos, &ypos);
-            if (action == GLFW_PRESS) {
-                    pimpl_->cursor_position = {xpos, HEIGHT - ypos};
-                    if (xpos > WIDTH/2){
-                        pimpl_->selected_window = RIGHT;
-                    } else {
-                        pimpl_->selected_window = LEFT;
-                    }
-                    pimpl_->mouse = MOUSE_JUST_CLICKED;
-            } else if (action == GLFW_RELEASE) {
-                pimpl_->render_request = true;
-                pimpl_->mouse = MOUSE_RELEASSED;
-            }
+  if (!pimpl_->imgui_focus) {
+    if (button == GLFW_MOUSE_BUTTON_LEFT) {
+      glfwGetCursorPos(window, &xpos, &ypos);
+      if (pimpl_->pan) {
+        if (action == GLFW_PRESS) {
+          pimpl_->mouse_position = {xpos, HEIGHT - ypos};
+          if (xpos > WIDTH / 2) {
+            pimpl_->selected_window = RIGHT;
+          } else {
+            pimpl_->selected_window = LEFT;
+          }
+          pimpl_->mouse = MOUSE_JUST_CLICKED;
+        } else if (action == GLFW_RELEASE) {
+          pimpl_->render_request = true;
+          pimpl_->mouse = MOUSE_RELEASSED;
         }
+      } else {
+          if (xpos < WIDTH / 2) {
+            pimpl_->cursor_position.real = pimpl_->position_on_left_window.real + ((pimpl_->range_x * xpos)/WIDTH*2);
+            pimpl_->cursor_position.imaginary = pimpl_->position_on_left_window.imaginary + (pimpl_->range_x * pimpl_->aspect_ratio *
+                                                                    (HEIGHT - ypos))/HEIGHT;
+            LOG_INFO( "X: " << pimpl_->cursor_position.real << " Y: " << pimpl_->cursor_position.imaginary);
+          }
+      }
     }
+  }
 }
 
 static void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
@@ -133,19 +144,21 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     if (key == GLFW_KEY_SPACE ) {
         if (action == GLFW_PRESS) {
             pimpl_->pan = true;
-            LOG_INFO("aaa");
+            // LOG_INFO("aaa");
         } else if(action == GLFW_RELEASE){
-            LOG_INFO("bbb");
+            // LOG_INFO("bbb");
             pimpl_->pan = false;
+            pimpl_->mouse = MOUSE_RELEASSED;
         }
     }
 }
 
-Handler::Handler(complex_number start_position):
+Handler::Handler(complex_number start_position, complex_number cursor_start_position):
     pimpl_(new Pimpl()) {
 
     pimpl_->position_on_left_window = start_position;
     pimpl_->position_on_right_window = start_position;
+    pimpl_->cursor_position = cursor_start_position;
 
     if (!glfwInit())
         throw InitException("Error on glfwInit");
@@ -204,6 +217,12 @@ complex_number Handler::get_left_position() {
 complex_number Handler::get_right_position() {
     return pimpl_->position_on_right_window;
 }
+
+complex_number Handler::get_cursor_position() {
+    return pimpl_->cursor_position;
+}
+
+
 
 double Handler::get_x_range() {
     return pimpl_->range_x;

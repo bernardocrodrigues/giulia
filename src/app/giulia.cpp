@@ -33,11 +33,11 @@ int main() {
 
         complex_number aux = WindowHandler->get_left_position();
         complex_number aux2 = WindowHandler->get_right_position();
-        // Renderer->Draw(LEFT, mode, MANDELBROT);
-        // Renderer->Draw(RIGHT, mode, MANDELBROT);
+        complex_number aux3 = WindowHandler->get_cursor_position();
 
-        Renderer->Draw(LEFT, mode, MANDELBROT, aux);
-        Renderer->Draw(RIGHT, mode, MANDELBROT, aux2);
+        Renderer->Draw(LEFT, mode, MANDELBROT, aux, aux3);
+        Renderer->Draw(RIGHT, mode, JULIA, aux2, aux3);
+        Renderer->DrawCursor(aux, aux3);
 
         Renderer->DrawLogo(mode);
 
@@ -46,7 +46,7 @@ int main() {
         WindowHandler->swap_buffers();
 
 
-        LOG_INFO("X: " << aux.real << "Y: " << aux.imaginary);
+        // LOG_INFO("X: " << aux.real << " Y: " << aux.imaginary);
 
     }
 

@@ -14,7 +14,7 @@ class Handler{
         void Clear() const;
         void DrawLogo(compute_mode_t& mode);
         void DrawCursor(complex_number origin, complex_number position);
-        void Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position, complex_number c);
+        void Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position, complex_number c, int iter, precision_mode_t precision);
 
         Handler();
         ~Handler();

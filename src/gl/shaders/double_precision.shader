@@ -12,13 +12,17 @@ void main()
 #shader fragment
 #version 400 core
 
-#define iter 1024
 
 layout(location = 0) out vec4 color;
 uniform dvec2 down_left;
-uniform double range_x;
-uniform double range_y;
-uniform uvec2 screen_resolution;
+uniform dvec2 c;
+
+uniform uvec2 render_resolution;
+uniform uvec2 render_offset;
+uniform float range_x;
+uniform float range_y;
+uniform uint mode_;
+uniform uint iter;
 
 double magnetude(in dvec2 c_num){
     return sqrt((c_num.x * c_num.x) + (c_num.y * c_num.y));
@@ -38,32 +42,33 @@ dvec2 add_(in dvec2 c_num_a, in dvec2 c_num_b) {
     return aux;
 }
 
-int mandebrot_set_degree(in dvec2 candidate, in int max_steps, in float threshold) {
+int mandebrot_set_degree(in dvec2 z, in dvec2 c, in int max_steps, in float threshold) {
 
-    dvec2 c = candidate;
-    dvec2 z;
-    z.x = 0.0;
-    z.y = 0.0;
     int index = 0;
-
     while (index < max_steps && (magnetude(z) < threshold)) {
         z = add_(product(z,z), c);
         index++;
     }
-
     return index;
 }
 
 void main()
 {
-    dvec2 imaginary_number;
-    imaginary_number.x = down_left.x + (range_x*gl_FragCoord.x)/screen_resolution.x;
-    imaginary_number.y = down_left.y + (range_y*gl_FragCoord.y)/screen_resolution.y;
-
-    int mandebrot_num = mandebrot_set_degree(imaginary_number, iter, 4.0);
-    float mandebrot = (float(mandebrot_num) / iter);
-
     vec4 aux;
+    dvec2 z;
+    int mandebrot_num;
+
+    if (mode_ == 0) {
+        z.x = down_left.x + (range_x*(gl_FragCoord.x - render_offset.x))/render_resolution.x;
+        z.y = down_left.y + (range_y*gl_FragCoord.y)/render_resolution.y;
+        mandebrot_num = mandebrot_set_degree(z, z, int(iter), 4.0);
+    } else {
+        z.x = down_left.x + ((range_x*gl_FragCoord.x) - render_resolution.x * 2)/render_resolution.x;
+        z.y = down_left.y + (range_y*gl_FragCoord.y)/render_resolution.y;
+        mandebrot_num = mandebrot_set_degree(z, c, int(iter), 4.0);
+    }
+
+    float mandebrot = (float(mandebrot_num) /  int(iter));
     aux.x = mandebrot;
     aux.y = mandebrot;
     aux.z = mandebrot;

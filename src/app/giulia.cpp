@@ -35,8 +35,8 @@ int main() {
         complex_number aux2 = WindowHandler->get_right_position();
         complex_number aux3 = WindowHandler->get_cursor_position();
 
-        Renderer->Draw(LEFT, mode, MANDELBROT, aux, aux3);
-        Renderer->Draw(RIGHT, mode, JULIA, aux2, aux3);
+        Renderer->Draw(LEFT, mode, MANDELBROT, aux, aux3, WindowHandler->get_iter_number(), WindowHandler->get_selected_precision_mode());
+        Renderer->Draw(RIGHT, mode, JULIA, aux2, aux3, WindowHandler->get_iter_number(), WindowHandler->get_selected_precision_mode());
         Renderer->DrawCursor(aux, aux3);
 
         Renderer->DrawLogo(mode);

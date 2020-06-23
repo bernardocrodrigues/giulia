@@ -12,17 +12,18 @@ void main()
 #shader fragment
 #version 400 core
 
-#define iter 32
+// #define iter 32
 
 layout(location = 0) out vec4 color;
-uniform vec2 down_left;
-uniform vec2 c;
+uniform dvec2 down_left;
+uniform dvec2 c;
 
 uniform uvec2 render_resolution;
 uniform uvec2 render_offset;
 uniform float range_x;
 uniform float range_y;
 uniform uint mode_;
+uniform uint iter;
 
 
 
@@ -59,19 +60,22 @@ void main()
 
     vec4 aux;
     vec2 z;
+    vec2 c_single;
+    c_single.x = float(c.x);
+    c_single.y = float(c.y);
     int mandebrot_num;
 
     if (mode_ == 0) {
-        z.x = down_left.x + (range_x*(gl_FragCoord.x - render_offset.x))/render_resolution.x;
-        z.y = down_left.y + (range_y*gl_FragCoord.y)/render_resolution.y;
-        mandebrot_num = mandebrot_set_degree(z, z, iter, 4.0);
+        z.x = float(down_left.x) + (range_x*(gl_FragCoord.x - render_offset.x))/render_resolution.x;
+        z.y = float(down_left.y) + (range_y*gl_FragCoord.y)/render_resolution.y;
+        mandebrot_num = mandebrot_set_degree(z, z, int(iter), 4.0);
     } else {
-        z.x = down_left.x + ((range_x*gl_FragCoord.x) - render_resolution.x * 2)/render_resolution.x;
-        z.y = down_left.y + (range_y*gl_FragCoord.y)/render_resolution.y;
-        mandebrot_num = mandebrot_set_degree(z, c, iter, 4.0);
+        z.x = float(down_left.x) + ((range_x*gl_FragCoord.x) - render_resolution.x * 2)/render_resolution.x;
+        z.y = float(down_left.y) + (range_y*gl_FragCoord.y)/render_resolution.y;
+        mandebrot_num = mandebrot_set_degree(z, c_single, int(iter), 4.0);
     }
 
-    float mandebrot = (float(mandebrot_num) / iter);
+    float mandebrot = (float(mandebrot_num) /  int(iter));
     aux.x = mandebrot;
     aux.y = mandebrot;
     aux.z = mandebrot;

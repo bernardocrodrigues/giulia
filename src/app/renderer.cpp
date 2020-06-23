@@ -6,7 +6,6 @@
 #include "glm.hpp"
 #include "gtc/matrix_transform.hpp"
 
-
 namespace Renderer{
 
 class Pimpl{
@@ -43,6 +42,7 @@ class Pimpl{
 
         Shader          *texture_shader;
         Shader          *single_precision_shader;
+        Shader          *double_precision_shader;
         Shader          *cursor_shader;
 
         Texture         *opengl_logo;
@@ -83,6 +83,7 @@ Pimpl::Pimpl() {
 
     texture_shader = new Shader("src/gl/shaders/texture.shader");
     single_precision_shader = new Shader("src/gl/shaders/single_precision.shader");
+    double_precision_shader = new Shader("src/gl/shaders/double_precision.shader");
     cursor_shader = new Shader("src/gl/shaders/pointer.shader");
 
     opengl_logo = new Texture("res/opengl_logo.png");
@@ -143,45 +144,54 @@ void Handler::DrawLogo(compute_mode_t& mode) {
     GlCall(glDisable(GL_BLEND));
 }
 
-void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position, complex_number c) {
+void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position, complex_number c, int iter, precision_mode_t precision) {
 
     double aspect_ratio = 1;
-
     double range_x = 3;
     double range_y = range_x * aspect_ratio;
 
+
+    Shader *shader;
+
+    if (precision == SINGLE_MODE) {
+        shader = pimpl_->single_precision_shader;
+    } else {
+        shader = pimpl_->double_precision_shader;
+    }
+
     glm::mat4 proj_screen = glm::ortho(0.0, (double) WIDTH, 0.0, (double) HEIGHT, 0.0, 2.0);
 
-    pimpl_->single_precision_shader->Bind();
-    pimpl_->single_precision_shader->SetUniform2f("down_left", (float) position.real, (float) position.imaginary);
-    pimpl_->single_precision_shader->SetUniform1f("range_x", (float) range_x);
-    pimpl_->single_precision_shader->SetUniform1f("range_y", (float) range_y);
-    pimpl_->single_precision_shader->SetUniform2ui("render_resolution", WIDTH/2, HEIGHT);
-    pimpl_->single_precision_shader->SetUniformMat4f("u_MVP", proj_screen);
+    shader->Bind();
+    shader->SetUniform2d("down_left", position.real, position.imaginary);
+    shader->SetUniform1f("range_x", (float) range_x);
+    shader->SetUniform1f("range_y", (float) range_y);
+    shader->SetUniform2ui("render_resolution", WIDTH/2, HEIGHT);
+    shader->SetUniformMat4f("u_MVP", proj_screen);
+    shader->SetUniform1ui("iter", iter);
 
     if (target == MANDELBROT){
-        pimpl_->single_precision_shader->SetUniform1ui("mode_", 0);
+        shader->SetUniform1ui("mode_", 0);
     } else {
-        pimpl_->single_precision_shader->SetUniform1ui("mode_", 1);
-        pimpl_->single_precision_shader->SetUniform2f("c", (float) c.real, (float) c.imaginary);
+        shader->SetUniform1ui("mode_", 1);
+        shader->SetUniform2d("c", c.real, c.imaginary);
     }
 
     switch (region) {
       case LEFT:
-        pimpl_->single_precision_shader->SetUniform2ui("render_offset", 0, 0);
+        shader->SetUniform2ui("render_offset", 0, 0);
         pimpl_->Draw(pimpl_->left_half_va, pimpl_->left_half_ib,
-                     pimpl_->single_precision_shader);
+                     shader);
         break;
       case RIGHT:
-        pimpl_->single_precision_shader->SetUniform2ui("render_offset",
+        shader->SetUniform2ui("render_offset",
                                                        WIDTH / 2, 0);
         pimpl_->Draw(pimpl_->right_half_va, pimpl_->right_half_ib,
-                     pimpl_->single_precision_shader);
+                     shader);
         break;
       case FULL:
-        pimpl_->single_precision_shader->SetUniform2ui("render_offset", 0, 0);
+        shader->SetUniform2ui("render_offset", 0, 0);
         pimpl_->Draw(pimpl_->full_screen_va, pimpl_->full_screen_ib,
-                     pimpl_->single_precision_shader);
+                     shader);
         break;
       default:
         break;

@@ -17,6 +17,8 @@ class Handler {
   ~Handler();
 
   compute_mode_t get_selected_compute_mode();
+  precision_mode_t get_selected_precision_mode();
+  int get_iter_number();
 
   bool user_has_not_exited();
   void poll_events();

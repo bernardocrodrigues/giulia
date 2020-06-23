@@ -19,6 +19,11 @@ typedef enum {
 } compute_mode_t;
 
 typedef enum {
+  SINGLE_MODE,
+  DOUBLE_MODE
+} precision_mode_t;
+
+typedef enum {
   MANDELBROT,
   JULIA
 } compute_target_t;

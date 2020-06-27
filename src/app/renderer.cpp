@@ -15,7 +15,7 @@ class Pimpl{
         void Draw(const VertexArray* va, const IndexBuffer* ib, const Shader* shader) const;
         void DrawSide(bool ) const;
         void Clear() const;
-        mouse_coodenate ComplexNumber2Coodnate(complex_number origin, complex_number position) const;
+        mouse_coodenate ComplexNumber2Coodnate(complex_number origin, complex_number position, double range_x, double range_y) const;
 
         VertexBufferLayout layout;
         VertexBufferLayout logo_layout;
@@ -144,10 +144,10 @@ void Handler::DrawLogo(compute_mode_t& mode) {
     GlCall(glDisable(GL_BLEND));
 }
 
-void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position, complex_number c, int iter, precision_mode_t precision) {
+void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position, complex_number c, int iter, precision_mode_t precision, double range_x, int color_preset) {
 
     double aspect_ratio = 1;
-    double range_x = 3;
+    // double range_x = 3;
     double range_y = range_x * aspect_ratio;
 
 
@@ -168,6 +168,7 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
     shader->SetUniform2ui("render_resolution", WIDTH/2, HEIGHT);
     shader->SetUniformMat4f("u_MVP", proj_screen);
     shader->SetUniform1ui("iter", iter);
+    shader->SetUniform1ui("color_preset", color_preset);
 
     if (target == MANDELBROT){
         shader->SetUniform1ui("mode_", 0);
@@ -183,8 +184,9 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
                      shader);
         break;
       case RIGHT:
-        shader->SetUniform2ui("render_offset",
-                                                       WIDTH / 2, 0);
+        LOG_INFO("RENDER " << range_x << " " << position.real << " " << position.imaginary);
+
+        shader->SetUniform2ui("render_offset", 1024, 0);
         pimpl_->Draw(pimpl_->right_half_va, pimpl_->right_half_ib,
                      shader);
         break;
@@ -198,19 +200,20 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
     }
 }
 
-mouse_coodenate Pimpl::ComplexNumber2Coodnate(complex_number origin, complex_number position) const {
+mouse_coodenate Pimpl::ComplexNumber2Coodnate(complex_number origin, complex_number position, double range_x, double range_y) const {
     complex_number delta = {position.real - origin.real, position.imaginary - origin.imaginary};
-    return {(delta.real * WIDTH/2)/3.0, (delta.imaginary * HEIGHT)/3.0,};
+    return {(delta.real * WIDTH/2)/range_x, (delta.imaginary * HEIGHT)/range_y};
 }
 
-void Handler::DrawCursor(complex_number origin, complex_number position) {
+void Handler::DrawCursor(complex_number origin, complex_number position, double range) {
 
     glm::mat4 proj = glm::ortho(0.0, (double) WIDTH/cursor_scale,
                                 0.0, (double) HEIGHT/cursor_scale,
                                 0.0, 2.0);
 
+    double aspect_ratio = 1;
 
-    mouse_coodenate offset = pimpl_->ComplexNumber2Coodnate(origin, position);
+    mouse_coodenate offset = pimpl_->ComplexNumber2Coodnate(origin, position, range, range * aspect_ratio);
 
     if( offset.x <= WIDTH/2) {
         glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(offset.x/cursor_scale, offset.y/cursor_scale ,0));

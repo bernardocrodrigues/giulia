@@ -13,12 +13,13 @@ class Pimpl;
 
 class Handler {
  public:
-  Handler(complex_number start_position = {-2.2, -1.5}, complex_number cursor_start_position = {0.0, 0.0});
+  Handler(complex_number start_position_on_left = {-2.2, -1.5}, complex_number start_position_on_right = {-1.41, -1.53}, complex_number cursor_start_position = {0.0, 0.0});
   ~Handler();
 
   compute_mode_t get_selected_compute_mode();
   precision_mode_t get_selected_precision_mode();
   int get_iter_number();
+  int get_color_preset_number();
 
   bool user_has_not_exited();
   void poll_events();
@@ -29,8 +30,8 @@ class Handler {
   complex_number get_left_position();
   complex_number get_right_position();
   complex_number get_cursor_position();
-  double get_x_range();
-  double get_y_range();
+  double get_x_range_on_right();
+  double get_x_range_on_left();
 
   bool render_requested();
 

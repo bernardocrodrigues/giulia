@@ -28,10 +28,12 @@ class Pimpl {
         complex_number position_on_left_window;
         complex_number position_on_right_window;
         complex_number cursor_position;
-        double range_x;
+        double range_x_on_left_window;
+        double range_x_on_right_window;
         float aspect_ratio;
 
         int iter;
+        int color_preset;
 
         Pimpl();
         ~Pimpl();
@@ -44,9 +46,11 @@ Pimpl::Pimpl() :
     mouse(MOUSE_RELEASSED),
     pan(false),
     render_request(true),
-    range_x(3),
+    range_x_on_left_window(3),
+    range_x_on_right_window(3),
     aspect_ratio(1),
-    iter(32)
+    iter(32),
+    color_preset(1)
     {}
 
 static void glfw_error_callback(int error, const char* desc) {
@@ -80,8 +84,8 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action,
       } else {
           if (xpos < WIDTH / 2) {
               if (action == GLFW_PRESS) {
-                pimpl_->cursor_position.real = pimpl_->position_on_left_window.real + ((pimpl_->range_x * xpos)/WIDTH*2);
-                pimpl_->cursor_position.imaginary = pimpl_->position_on_left_window.imaginary + (pimpl_->range_x * pimpl_->aspect_ratio *
+                pimpl_->cursor_position.real = pimpl_->position_on_left_window.real + ((pimpl_->range_x_on_left_window * xpos)/WIDTH*2);
+                pimpl_->cursor_position.imaginary = pimpl_->position_on_left_window.imaginary + (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio *
                                                                         (HEIGHT - ypos))/HEIGHT;
                 pimpl_->mouse = MOUSE_JUST_CLICKED;
               } else if (action == GLFW_RELEASE) {
@@ -106,7 +110,6 @@ static void cursor_position_callback(GLFWwindow* window, double xpos,
         pimpl_->mouse = MOUSE_CLICKED;
         break;
       case MOUSE_CLICKED: {
-        LOG_INFO("aaaaaaaaa");
         if (pimpl_->pan) {
           mouse_coodenate delta = {xpos - pimpl_->anchor.x,
                                    ypos - pimpl_->anchor.y};
@@ -114,30 +117,29 @@ static void cursor_position_callback(GLFWwindow* window, double xpos,
             if (pimpl_->selected_window == LEFT) {
               pimpl_->position_on_left_window.real =
                   pimpl_->position_on_left_window.real -
-                  (pimpl_->range_x * delta.x) / WIDTH * 2;
+                  (pimpl_->range_x_on_left_window * delta.x) / WIDTH * 2;
               pimpl_->position_on_left_window.imaginary =
                   pimpl_->position_on_left_window.imaginary +
-                  (pimpl_->range_x * pimpl_->aspect_ratio * delta.y) / HEIGHT;
+                  (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio * delta.y) / HEIGHT;
             } else {
               pimpl_->position_on_right_window.real =
                   pimpl_->position_on_right_window.real -
-                  (pimpl_->range_x * delta.x) / WIDTH * 2;
+                  (pimpl_->range_x_on_right_window * delta.x) / WIDTH * 2;
               pimpl_->position_on_right_window.imaginary =
                   pimpl_->position_on_right_window.imaginary +
-                  (pimpl_->range_x * pimpl_->aspect_ratio * delta.y) / HEIGHT;
+                  (pimpl_->range_x_on_right_window * pimpl_->aspect_ratio * delta.y) / HEIGHT;
             }
             pimpl_->anchor = {xpos, ypos};
             pimpl_->render_request = true;
             }
           } else {
-            LOG_INFO("aaaaaaaaa");
             if (xpos < WIDTH / 2) {
               pimpl_->cursor_position.real =
                   pimpl_->position_on_left_window.real +
-                  ((pimpl_->range_x * xpos) / WIDTH * 2);
+                  ((pimpl_->range_x_on_left_window * xpos) / WIDTH * 2);
               pimpl_->cursor_position.imaginary =
                   pimpl_->position_on_left_window.imaginary +
-                  (pimpl_->range_x * pimpl_->aspect_ratio * (HEIGHT - ypos)) /
+                  (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio * (HEIGHT - ypos)) /
                       HEIGHT;
             }
           }
@@ -170,11 +172,67 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
 }
 
-Handler::Handler(complex_number start_position, complex_number cursor_start_position):
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset){
+
+    double xpos, ypos;
+    Pimpl* pimpl_ = reinterpret_cast<Pimpl*>(glfwGetWindowUserPointer(window));
+    glfwGetCursorPos(window, &xpos, &ypos);
+
+    float ratio;
+    float offset;
+
+    if (yoffset > 0) {
+        ratio = 0.5;
+    } else if (yoffset < 0) {
+        ratio = 2;
+    }
+
+    if (xpos <= WIDTH / 2) {
+        if (yoffset > 0) {
+        pimpl_->range_x_on_left_window /= 2;
+        pimpl_->position_on_left_window = {
+            pimpl_->position_on_left_window.real +
+                pimpl_->range_x_on_left_window / 2,
+            pimpl_->position_on_left_window.imaginary +
+                pimpl_->range_x_on_left_window * pimpl_->aspect_ratio / 2};
+        } else if (yoffset < 0) {
+        pimpl_->range_x_on_left_window *= 2;
+        pimpl_->position_on_left_window = {
+            pimpl_->position_on_left_window.real -
+                pimpl_->range_x_on_left_window / 4,
+            pimpl_->position_on_left_window.imaginary -
+                pimpl_->range_x_on_left_window * pimpl_->aspect_ratio / 4};
+        }
+        pimpl_->render_request = true;
+    } else {
+        if (yoffset > 0) {
+        pimpl_->range_x_on_right_window /= 2;
+        pimpl_->position_on_right_window = {
+            pimpl_->position_on_right_window.real +
+                pimpl_->range_x_on_right_window / 2,
+            pimpl_->position_on_right_window.imaginary +
+                pimpl_->range_x_on_right_window * pimpl_->aspect_ratio / 2};
+        } else if (yoffset < 0) {
+        pimpl_->range_x_on_right_window *= 2;
+        pimpl_->position_on_right_window = {
+            pimpl_->position_on_right_window.real -
+                pimpl_->range_x_on_right_window / 4,
+            pimpl_->position_on_right_window.imaginary -
+                pimpl_->range_x_on_right_window * pimpl_->aspect_ratio / 4};
+        }
+        pimpl_->render_request = true;
+    }
+    LOG_INFO("LEFT " << pimpl_->range_x_on_left_window << " " << pimpl_->position_on_left_window.real << " " << pimpl_->position_on_left_window.imaginary);
+    LOG_INFO("RIGHT " << pimpl_->range_x_on_right_window << " " << pimpl_->position_on_right_window.real << " " << pimpl_->position_on_right_window.imaginary);
+}
+
+
+Handler::Handler(complex_number start_position_on_left, complex_number start_position_on_right, complex_number cursor_start_position):
     pimpl_(new Pimpl()) {
 
-    pimpl_->position_on_left_window = start_position;
-    pimpl_->position_on_right_window = start_position;
+    pimpl_->position_on_left_window = start_position_on_left;
+    pimpl_->position_on_right_window = start_position_on_right;
     pimpl_->cursor_position = cursor_start_position;
 
     if (!glfwInit())
@@ -201,6 +259,8 @@ Handler::Handler(complex_number start_position, complex_number cursor_start_posi
     glfwSetMouseButtonCallback(pimpl_->window, mouse_button_callback);
     glfwSetCursorPosCallback(pimpl_->window, cursor_position_callback);
     glfwSetKeyCallback(pimpl_->window, key_callback);
+    glfwSetScrollCallback(pimpl_->window, scroll_callback);
+
 
     if (glewInit() != GLEW_OK){
         throw InitException("GLEW was not initialized sucessfully");
@@ -243,13 +303,14 @@ complex_number Handler::get_cursor_position() {
     return pimpl_->cursor_position;
 }
 
-double Handler::get_x_range() {
-    return pimpl_->range_x;
+double Handler::get_x_range_on_right() {
+    return pimpl_->range_x_on_right_window;
 }
 
-double Handler::get_y_range() {
-    return pimpl_->range_x * pimpl_->aspect_ratio;
+double Handler::get_x_range_on_left() {
+    return pimpl_->range_x_on_left_window;
 }
+
 
 void Handler::render_imgui() {
 
@@ -296,8 +357,16 @@ void Handler::render_imgui() {
         ImGui::SameLine();
         ImGui::Checkbox("Double", &double_p);
 
+        // ImGui::Text("Fullscreen: ");
+        // ImGui::SameLine();
+        // ImGui::Checkbox("Mandelbrot", &single_p);
+        // ImGui::SameLine();
+        // ImGui::Checkbox("Julia", &double_p);
+
+
 
         ImGui::SliderInt("Iterations", &pimpl_->iter, 0, 2000);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderInt("Color Preset", &pimpl_->color_preset, 1, 5);            // Edit 1 float using a slider from 0.0f to 1.0f
 
         if (opengl != opengl_old) {
             opengl_old = opengl;
@@ -398,8 +467,17 @@ int Handler::get_iter_number() {
     return pimpl_->iter;
 }
 
+int Handler::get_color_preset_number() {
+    return pimpl_->color_preset;
+}
+
 bool Handler::render_requested() {
-    return pimpl_->render_request;
+    if (pimpl_->render_request) {
+        pimpl_->render_request = false;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 }

@@ -30,17 +30,32 @@ int main() {
         Renderer->Clear();
 
         // if(WindowHandler->render_requested()) {
-            complex_number aux = WindowHandler->get_left_position();
-            complex_number aux2 = WindowHandler->get_right_position();
-            complex_number aux3 = WindowHandler->get_cursor_position();
 
-            Renderer->Draw(LEFT, mode, MANDELBROT, aux, aux3, WindowHandler->get_iter_number(), WindowHandler->get_selected_precision_mode(), WindowHandler->get_x_range_on_left(), WindowHandler->get_color_preset_number());
-            Renderer->Draw(RIGHT, mode, JULIA, aux2, aux3, WindowHandler->get_iter_number(), WindowHandler->get_selected_precision_mode(), WindowHandler->get_x_range_on_right(), WindowHandler->get_color_preset_number());
+        complex_number aux = WindowHandler->get_left_position();
+        complex_number aux2 = WindowHandler->get_right_position();
+        complex_number aux3 = WindowHandler->get_cursor_position();
+
+
+        switch (WindowHandler->get_fullscreen_mode())
+        {
+        case NONE:
+            Renderer->Draw(LEFT, mode, MANDELBROT, aux, aux3, WindowHandler->get_iter_number(), WindowHandler->get_selected_precision_mode(), WindowHandler->get_x_range_on_left(), WindowHandler->get_color_preset_number(), WindowHandler->get_exponent());
+            Renderer->Draw(RIGHT, mode, JULIA, aux2, aux3, WindowHandler->get_iter_number(), WindowHandler->get_selected_precision_mode(), WindowHandler->get_x_range_on_right(), WindowHandler->get_color_preset_number(), WindowHandler->get_exponent());
             Renderer->DrawCursor(aux, aux3, WindowHandler->get_x_range_on_left());
+            break;
+        case MANDELBROT_F:
+            Renderer->Draw(FULL, mode, MANDELBROT, aux, aux3, WindowHandler->get_iter_number(), WindowHandler->get_selected_precision_mode(), WindowHandler->get_x_range_on_left(), WindowHandler->get_color_preset_number(), WindowHandler->get_exponent());
+            break;
+        case JULIA_F:
+            Renderer->Draw(FULL, mode, JULIA, aux2, aux3, WindowHandler->get_iter_number(), WindowHandler->get_selected_precision_mode(), WindowHandler->get_x_range_on_right(), WindowHandler->get_color_preset_number(), WindowHandler->get_exponent());
+            break;
+        default:
+            break;
+        }
 
-            Renderer->DrawLogo(mode);
-            WindowHandler->render_imgui();
-            WindowHandler->swap_buffers();
+        Renderer->DrawLogo(mode);
+        WindowHandler->render_imgui();
+        WindowHandler->swap_buffers();
 
         // } else {
         //     WindowHandler->render_imgui();

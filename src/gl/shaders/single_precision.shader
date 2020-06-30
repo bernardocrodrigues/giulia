@@ -4,15 +4,12 @@
 layout(location = 0) in vec4 position;
 uniform mat4 u_MVP;
 
-void main()
-{
+void main() {
     gl_Position = u_MVP * position;
 };
 
 #shader fragment
 #version 400 core
-
-// #define iter 32
 
 layout(location = 0) out vec4 color;
 uniform dvec2 down_left;
@@ -25,6 +22,7 @@ uniform float range_y;
 uniform uint mode_;
 uniform uint iter;
 uniform uint color_preset;
+uniform uint exponent;
 
 float magnetude(in vec2 c_num){
     return sqrt((c_num.x * c_num.x) + (c_num.y * c_num.y));
@@ -44,25 +42,26 @@ vec2 add_(in vec2 c_num_a, in vec2 c_num_b) {
     return aux;
 }
 
-int mandebrot_set_degree(in vec2 z, in vec2 c, in int max_steps, in float threshold) {
+int mandebrot_set_degree(in vec2 z, in vec2 c, in int max_steps, in float threshold, in uint exponent) {
 
     int index = 0;
     while (index < max_steps && (magnetude(z) < threshold)) {
-        z = add_(product(z,z), c);
+        for(int i = 1; i < exponent; i++){
+            z = product(z,z);
+        }
+        z = add_(z, c);
         index++;
     }
     return index;
 }
 
-vec3 hsv2rgb(vec3 c)
-{
+vec3 hsv2rgb(vec3 c) {
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
     vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
     return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
 }
 
-void main()
-{
+void main() {
 
     vec4 aux;
     vec2 z;
@@ -80,9 +79,9 @@ void main()
     z.y = float(down_left.y) + range_y * normalized_coord.y;
 
     if (mode_ == 0) {
-        mandebrot_num = mandebrot_set_degree(z, z, int(iter), 4.0);
+        mandebrot_num = mandebrot_set_degree(z, z, int(iter), 4.0, exponent);
     } else {
-        mandebrot_num = mandebrot_set_degree(z, c_single, int(iter), 4.0);
+        mandebrot_num = mandebrot_set_degree(z, c_single, int(iter), 4.0, exponent);
     }
 
     float mandebrot = (float(mandebrot_num) /  int(iter));

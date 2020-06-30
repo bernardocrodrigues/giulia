@@ -144,12 +144,10 @@ void Handler::DrawLogo(compute_mode_t& mode) {
     GlCall(glDisable(GL_BLEND));
 }
 
-void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position, complex_number c, int iter, precision_mode_t precision, double range_x, int color_preset) {
+void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_t target, complex_number position, complex_number c, int iter, precision_mode_t precision, double range_x, int color_preset, int exponent) {
 
     double aspect_ratio = 1;
-    // double range_x = 3;
     double range_y = range_x * aspect_ratio;
-
 
     Shader *shader;
 
@@ -169,6 +167,7 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
     shader->SetUniformMat4f("u_MVP", proj_screen);
     shader->SetUniform1ui("iter", iter);
     shader->SetUniform1ui("color_preset", color_preset);
+    shader->SetUniform1ui("exponent", exponent);
 
     if (target == MANDELBROT){
         shader->SetUniform1ui("mode_", 0);
@@ -184,8 +183,6 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
                      shader);
         break;
       case RIGHT:
-        LOG_INFO("RENDER " << range_x << " " << position.real << " " << position.imaginary);
-
         shader->SetUniform2ui("render_offset", 1024, 0);
         pimpl_->Draw(pimpl_->right_half_va, pimpl_->right_half_ib,
                      shader);

@@ -22,8 +22,8 @@ class Handler{
                   int iter,
                   precision_mode_t precision,
                   double range_x,
-                  int color_preset);
-
+                  int color_preset,
+                  int exponent);
         Handler();
         ~Handler();
     private:

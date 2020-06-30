@@ -16,6 +16,7 @@ class Pimpl {
         GLFWwindow* window;
         compute_mode_t compute_mode;
         precision_mode_t precision_mode;
+        fullscreen_mode_t fullscreen_mode;
 
         mouse_state_t mouse;
         mouse_coodenate mouse_position;
@@ -34,6 +35,7 @@ class Pimpl {
 
         int iter;
         int color_preset;
+        int exponent;
 
         Pimpl();
         ~Pimpl();
@@ -50,7 +52,8 @@ Pimpl::Pimpl() :
     range_x_on_right_window(3),
     aspect_ratio(1),
     iter(32),
-    color_preset(1)
+    color_preset(1),
+    exponent(2)
     {}
 
 static void glfw_error_callback(int error, const char* desc) {
@@ -329,21 +332,14 @@ void Handler::render_imgui() {
         static bool double_p = false;
         static bool double_p_old = false;
 
+        static bool fullsceen_mandelbrot = true;
+        static bool fullsceen_mandelbrot_old = true;
+        static bool fullsceen_julia = false;
+        static bool fullsceen_julia_old = false;
+
         ImGui::Begin("Settings");                          // Create a window called "Hello, world!" and append into it.
 
-        // ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-        // ImGui::Checkbox("Another Window", &show_another_window);
-
-        // ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
-
         pimpl_->imgui_focus = ImGui::IsWindowHovered();
-
-        // LOG_INFO(pimpl_->imgui_focus);
-        // pimpl_->imgui_focus = ImGui::IsWindowFocused();
-        // ImGuiIO *io = &ImGui::GetIO();
-
-        // io.WantCaptureMous = false;
-        // hover = io->MouseDown[0];
 
         ImGui::Text("Compute Mode: ");
         ImGui::SameLine();
@@ -357,16 +353,15 @@ void Handler::render_imgui() {
         ImGui::SameLine();
         ImGui::Checkbox("Double", &double_p);
 
-        // ImGui::Text("Fullscreen: ");
-        // ImGui::SameLine();
-        // ImGui::Checkbox("Mandelbrot", &single_p);
-        // ImGui::SameLine();
-        // ImGui::Checkbox("Julia", &double_p);
+        ImGui::Text("Full Screen: ");
+        ImGui::SameLine();
+        ImGui::Checkbox("Mandelbrot", &fullsceen_mandelbrot);
+        ImGui::SameLine();
+        ImGui::Checkbox("Julia", &fullsceen_julia);
 
-
-
-        ImGui::SliderInt("Iterations", &pimpl_->iter, 0, 2000);            // Edit 1 float using a slider from 0.0f to 1.0f
-        ImGui::SliderInt("Color Preset", &pimpl_->color_preset, 1, 5);            // Edit 1 float using a slider from 0.0f to 1.0f
+        ImGui::SliderInt("Iterations", &pimpl_->iter, 0, 2000);
+        ImGui::SliderInt("Color Preset", &pimpl_->color_preset, 1, 5);
+        ImGui::SliderInt("Z's exponent", &pimpl_->exponent, 2, 30);
 
         if (opengl != opengl_old) {
             opengl_old = opengl;
@@ -433,6 +428,30 @@ void Handler::render_imgui() {
             }
         }
 
+        if (fullsceen_mandelbrot != fullsceen_mandelbrot_old) {
+            fullsceen_mandelbrot_old = fullsceen_mandelbrot;
+            if (fullsceen_mandelbrot) {
+                pimpl_->fullscreen_mode = MANDELBROT_F;
+                LOG_INFO_WITH_CONTEXT("FULL_SCREEN_MANDELBROT");
+                if (fullsceen_julia)
+                    fullsceen_julia = false;
+            }
+        }
+
+        if (fullsceen_julia != fullsceen_julia_old){
+            fullsceen_julia_old = fullsceen_julia;
+            if (fullsceen_julia) {
+                pimpl_->fullscreen_mode = JULIA_F;
+                LOG_INFO_WITH_CONTEXT("FULL_SCREEN_JULIA");
+                if (fullsceen_mandelbrot)
+                    fullsceen_mandelbrot = false;
+            }
+        }
+
+        if(!fullsceen_julia && !fullsceen_mandelbrot) {
+            pimpl_->fullscreen_mode = NONE;
+        }
+
 
         // if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
             // counter++;
@@ -469,6 +488,14 @@ int Handler::get_iter_number() {
 
 int Handler::get_color_preset_number() {
     return pimpl_->color_preset;
+}
+
+int Handler::get_exponent() {
+    return pimpl_->exponent;
+}
+
+fullscreen_mode_t Handler::get_fullscreen_mode() {
+    return pimpl_->fullscreen_mode;
 }
 
 bool Handler::render_requested() {

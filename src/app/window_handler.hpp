@@ -18,8 +18,10 @@ class Handler {
 
   compute_mode_t get_selected_compute_mode();
   precision_mode_t get_selected_precision_mode();
+  fullscreen_mode_t get_fullscreen_mode();
   int get_iter_number();
   int get_color_preset_number();
+  int get_exponent();
 
   bool user_has_not_exited();
   void poll_events();

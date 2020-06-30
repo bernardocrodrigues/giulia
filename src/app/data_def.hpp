@@ -34,6 +34,12 @@ typedef enum {
   FULL,
 } window_region_t;
 
+typedef enum {
+  NONE,
+  MANDELBROT_F,
+  JULIA_F
+} fullscreen_mode_t;
+
 struct mouse_coodenate {
     double x;
     double y;

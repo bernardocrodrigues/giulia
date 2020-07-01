@@ -130,7 +130,7 @@ void Handler::DrawLogo(compute_mode_t& mode) {
     glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(10,10,0));
     glm::mat4 mvp = proj * view;
 
-    if (mode == OPENGL_MODE){
+    if (mode == compute_mode_t::OPENGL_MODE){
         pimpl_->opengl_logo->Bind();
     } else {
         pimpl_->opencl_logo->Bind();
@@ -151,7 +151,7 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
 
     Shader *shader;
 
-    if (precision == SINGLE_MODE) {
+    if (precision == precision_mode_t::SINGLE_MODE) {
         shader = pimpl_->single_precision_shader;
     } else {
         shader = pimpl_->double_precision_shader;
@@ -169,7 +169,7 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
     shader->SetUniform1ui("color_preset", color_preset);
     shader->SetUniform1ui("exponent", exponent);
 
-    if (target == MANDELBROT){
+    if (target == compute_target_t::MANDELBROT){
         shader->SetUniform1ui("mode_", 0);
     } else {
         shader->SetUniform1ui("mode_", 1);
@@ -177,17 +177,17 @@ void Handler::Draw(window_region_t region, compute_mode_t& mode, compute_target_
     }
 
     switch (region) {
-      case LEFT:
+      case window_region_t::LEFT:
         shader->SetUniform2ui("render_offset", 0, 0);
         pimpl_->Draw(pimpl_->left_half_va, pimpl_->left_half_ib,
                      shader);
         break;
-      case RIGHT:
+      case window_region_t::RIGHT:
         shader->SetUniform2ui("render_offset", 1024, 0);
         pimpl_->Draw(pimpl_->right_half_va, pimpl_->right_half_ib,
                      shader);
         break;
-      case FULL:
+      case window_region_t::FULL:
         shader->SetUniform2ui("render_offset", 0, 0);
         pimpl_->Draw(pimpl_->full_screen_va, pimpl_->full_screen_ib,
                      shader);

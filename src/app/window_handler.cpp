@@ -43,9 +43,10 @@ class Pimpl {
 
 Pimpl::Pimpl() :
     imgui_focus(false),
-    compute_mode(OPENGL_MODE),
-    precision_mode(SINGLE_MODE),
-    mouse(MOUSE_RELEASSED),
+    compute_mode(compute_mode_t::OPENGL_MODE),
+    precision_mode(precision_mode_t::SINGLE_MODE),
+    fullscreen_mode(fullscreen_mode_t::NONE),
+    mouse(mouse_state_t::MOUSE_RELEASSED),
     pan(false),
     render_request(true),
     range_x_on_left_window(3),
@@ -75,27 +76,28 @@ static void mouse_button_callback(GLFWwindow* window, int button, int action,
         if (action == GLFW_PRESS) {
           pimpl_->mouse_position = {xpos, HEIGHT - ypos};
           if (xpos > WIDTH / 2) {
-            pimpl_->selected_window = RIGHT;
+            pimpl_->selected_window = window_region_t::RIGHT;
           } else {
-            pimpl_->selected_window = LEFT;
+            pimpl_->selected_window = window_region_t::LEFT;
           }
-          pimpl_->mouse = MOUSE_JUST_CLICKED;
+          pimpl_->mouse = mouse_state_t::MOUSE_JUST_CLICKED;
         } else if (action == GLFW_RELEASE) {
           pimpl_->render_request = true;
-          pimpl_->mouse = MOUSE_RELEASSED;
+          pimpl_->mouse = mouse_state_t::MOUSE_RELEASSED;
         }
       } else {
           if (xpos < WIDTH / 2) {
               if (action == GLFW_PRESS) {
-                pimpl_->cursor_position.real = pimpl_->position_on_left_window.real + ((pimpl_->range_x_on_left_window * xpos)/WIDTH*2);
-                pimpl_->cursor_position.imaginary = pimpl_->position_on_left_window.imaginary + (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio *
-                                                                        (HEIGHT - ypos))/HEIGHT;
-                pimpl_->mouse = MOUSE_JUST_CLICKED;
+                if(pimpl_->fullscreen_mode == fullscreen_mode_t::NONE){
+                    pimpl_->cursor_position.real = pimpl_->position_on_left_window.real + ((pimpl_->range_x_on_left_window * xpos)/WIDTH*2);
+                    pimpl_->cursor_position.imaginary = pimpl_->position_on_left_window.imaginary + (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio *
+                                                                            (HEIGHT - ypos))/HEIGHT;
+                }
+                pimpl_->mouse = mouse_state_t::MOUSE_JUST_CLICKED;
               } else if (action == GLFW_RELEASE) {
-                pimpl_->mouse = MOUSE_RELEASSED;
+                pimpl_->mouse = mouse_state_t::MOUSE_RELEASSED;
                 pimpl_->render_request = true;
               }
-            // LOG_INFO( "X: " << pimpl_->cursor_position.real << " Y: " << pimpl_->cursor_position.imaginary);
           }
       }
     }
@@ -108,53 +110,74 @@ static void cursor_position_callback(GLFWwindow* window, double xpos,
 
   if (!pimpl_->imgui_focus) {
     switch (pimpl_->mouse) {
-      case MOUSE_JUST_CLICKED:
+      case mouse_state_t::MOUSE_JUST_CLICKED:
         pimpl_->anchor = {xpos, ypos};
-        pimpl_->mouse = MOUSE_CLICKED;
+        pimpl_->mouse = mouse_state_t::MOUSE_CLICKED;
         break;
-      case MOUSE_CLICKED: {
+      case mouse_state_t::MOUSE_CLICKED: {
         if (pimpl_->pan) {
           mouse_coodenate delta = {xpos - pimpl_->anchor.x,
                                    ypos - pimpl_->anchor.y};
           if (delta.x != 0 || delta.y != 0) {
-            if (pimpl_->selected_window == LEFT) {
-              pimpl_->position_on_left_window.real =
-                  pimpl_->position_on_left_window.real -
-                  (pimpl_->range_x_on_left_window * delta.x) / WIDTH * 2;
-              pimpl_->position_on_left_window.imaginary =
-                  pimpl_->position_on_left_window.imaginary +
-                  (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio * delta.y) / HEIGHT;
+            if (pimpl_->fullscreen_mode == fullscreen_mode_t::NONE){
+                if (pimpl_->selected_window == window_region_t::LEFT) {
+                pimpl_->position_on_left_window.real =
+                    pimpl_->position_on_left_window.real -
+                    (pimpl_->range_x_on_left_window * delta.x) / WIDTH * 2;
+                pimpl_->position_on_left_window.imaginary =
+                    pimpl_->position_on_left_window.imaginary +
+                    (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio * delta.y) / HEIGHT;
+                } else {
+                pimpl_->position_on_right_window.real =
+                    pimpl_->position_on_right_window.real -
+                    (pimpl_->range_x_on_right_window * delta.x) / WIDTH * 2;
+                pimpl_->position_on_right_window.imaginary =
+                    pimpl_->position_on_right_window.imaginary +
+                    (pimpl_->range_x_on_right_window * pimpl_->aspect_ratio * delta.y) / HEIGHT;
+                }
             } else {
-              pimpl_->position_on_right_window.real =
-                  pimpl_->position_on_right_window.real -
-                  (pimpl_->range_x_on_right_window * delta.x) / WIDTH * 2;
-              pimpl_->position_on_right_window.imaginary =
-                  pimpl_->position_on_right_window.imaginary +
-                  (pimpl_->range_x_on_right_window * pimpl_->aspect_ratio * delta.y) / HEIGHT;
+                if (pimpl_->fullscreen_mode == fullscreen_mode_t::MANDELBROT) {
+                    pimpl_->position_on_left_window.real =
+                        pimpl_->position_on_left_window.real -
+                        (pimpl_->range_x_on_left_window * delta.x) / WIDTH * 2;
+                    pimpl_->position_on_left_window.imaginary =
+                        pimpl_->position_on_left_window.imaginary +
+                        (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio * delta.y) / HEIGHT;
+                } else {
+                    pimpl_->position_on_right_window.real =
+                        pimpl_->position_on_right_window.real -
+                        (pimpl_->range_x_on_right_window * delta.x) / WIDTH * 2;
+                    pimpl_->position_on_right_window.imaginary =
+                        pimpl_->position_on_right_window.imaginary +
+                        (pimpl_->range_x_on_right_window * pimpl_->aspect_ratio * delta.y) / HEIGHT;
+                }
+
             }
             pimpl_->anchor = {xpos, ypos};
             pimpl_->render_request = true;
             }
           } else {
             if (xpos < WIDTH / 2) {
-              pimpl_->cursor_position.real =
-                  pimpl_->position_on_left_window.real +
-                  ((pimpl_->range_x_on_left_window * xpos) / WIDTH * 2);
-              pimpl_->cursor_position.imaginary =
-                  pimpl_->position_on_left_window.imaginary +
-                  (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio * (HEIGHT - ypos)) /
-                      HEIGHT;
+                if(pimpl_->fullscreen_mode == fullscreen_mode_t::NONE){
+                    pimpl_->cursor_position.real =
+                        pimpl_->position_on_left_window.real +
+                        ((pimpl_->range_x_on_left_window * xpos) / WIDTH * 2);
+                    pimpl_->cursor_position.imaginary =
+                        pimpl_->position_on_left_window.imaginary +
+                        (pimpl_->range_x_on_left_window * pimpl_->aspect_ratio * (HEIGHT - ypos)) /
+                            HEIGHT;
+                }
             }
           }
       } break;
-      case MOUSE_RELEASSED:
+      case mouse_state_t::MOUSE_RELEASSED:
         pimpl_->anchor = {0.0, 0.0};
         break;
       default:
         break;
     }
   } else {
-    if (pimpl_->mouse == MOUSE_CLICKED || pimpl_->mouse == MOUSE_JUST_CLICKED)
+    if (pimpl_->mouse == mouse_state_t::MOUSE_CLICKED || pimpl_->mouse == mouse_state_t::MOUSE_JUST_CLICKED)
       pimpl_->render_request = true;
   }
 }
@@ -168,9 +191,9 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
             pimpl_->pan = true;
             // LOG_INFO("aaa");
         } else if(action == GLFW_RELEASE){
-            // LOG_INFO("bbb");
+
             pimpl_->pan = false;
-            pimpl_->mouse = MOUSE_RELEASSED;
+            pimpl_->mouse = mouse_state_t::MOUSE_RELEASSED;
         }
     }
 }
@@ -314,7 +337,6 @@ double Handler::get_x_range_on_left() {
     return pimpl_->range_x_on_left_window;
 }
 
-
 void Handler::render_imgui() {
 
     ImGui_ImplOpenGL3_NewFrame();
@@ -332,8 +354,8 @@ void Handler::render_imgui() {
         static bool double_p = false;
         static bool double_p_old = false;
 
-        static bool fullsceen_mandelbrot = true;
-        static bool fullsceen_mandelbrot_old = true;
+        static bool fullsceen_mandelbrot = false;
+        static bool fullsceen_mandelbrot_old = false;
         static bool fullsceen_julia = false;
         static bool fullsceen_julia_old = false;
 
@@ -366,13 +388,13 @@ void Handler::render_imgui() {
         if (opengl != opengl_old) {
             opengl_old = opengl;
             if (opengl) {
-                pimpl_->compute_mode = OPENGL_MODE;
+                pimpl_->compute_mode = compute_mode_t::OPENGL_MODE;
                 LOG_INFO_WITH_CONTEXT("OPENGL_MODE");
                 if (opencl)
                     opencl = false;
             } else {
                 if (!opencl) {
-                    pimpl_->compute_mode = OPENCL_MODE;
+                    pimpl_->compute_mode = compute_mode_t::OPENCL_MODE;
                     LOG_INFO_WITH_CONTEXT("OPENCL_MODE");
                     opencl = true;
                 }
@@ -382,13 +404,13 @@ void Handler::render_imgui() {
         if (opencl != opencl_old){
             opencl_old = opencl;
             if (opencl) {
-                pimpl_->compute_mode = OPENCL_MODE;
+                pimpl_->compute_mode = compute_mode_t::OPENCL_MODE;
                 LOG_INFO_WITH_CONTEXT("OPENCL_MODE");
                 if (opengl)
                     opengl = false;
             } else {
                 if (!opengl){
-                    pimpl_->compute_mode = OPENGL_MODE;
+                    pimpl_->compute_mode = compute_mode_t::OPENGL_MODE;
                     LOG_INFO_WITH_CONTEXT("OPENGL_MODE");
                     opengl = true;
                 }
@@ -399,13 +421,13 @@ void Handler::render_imgui() {
         if (single_p != single_p_old) {
             single_p_old = single_p;
             if (single_p) {
-                pimpl_->precision_mode = SINGLE_MODE;
+                pimpl_->precision_mode = precision_mode_t::SINGLE_MODE;
                 LOG_INFO_WITH_CONTEXT("SINGLE_PRECISION_MODE");
                 if (double_p)
                     double_p = false;
             } else {
                 if (!double_p) {
-                    pimpl_->precision_mode = DOUBLE_MODE;
+                    pimpl_->precision_mode = precision_mode_t::DOUBLE_MODE;
                     LOG_INFO_WITH_CONTEXT("DOUBLE_PRECISION_MODE");
                     double_p = true;
                 }
@@ -415,13 +437,13 @@ void Handler::render_imgui() {
         if (double_p != double_p_old){
             double_p_old = double_p;
             if (double_p) {
-                pimpl_->precision_mode = DOUBLE_MODE;
+                pimpl_->precision_mode = precision_mode_t::DOUBLE_MODE;
                 LOG_INFO_WITH_CONTEXT("DOUBLE_PRECISION_MODE");
                 if (single_p)
                     single_p = false;
             } else {
                 if (!single_p){
-                    pimpl_->precision_mode = SINGLE_MODE;
+                    pimpl_->precision_mode = precision_mode_t::SINGLE_MODE;
                     LOG_INFO_WITH_CONTEXT("SINGLE_PRECISION_MODE");
                     single_p = true;
                 }
@@ -431,7 +453,8 @@ void Handler::render_imgui() {
         if (fullsceen_mandelbrot != fullsceen_mandelbrot_old) {
             fullsceen_mandelbrot_old = fullsceen_mandelbrot;
             if (fullsceen_mandelbrot) {
-                pimpl_->fullscreen_mode = MANDELBROT_F;
+                pimpl_->fullscreen_mode = fullscreen_mode_t::MANDELBROT;
+                pimpl_->position_on_left_window.real -= pimpl_->range_x_on_left_window/2;
                 LOG_INFO_WITH_CONTEXT("FULL_SCREEN_MANDELBROT");
                 if (fullsceen_julia)
                     fullsceen_julia = false;
@@ -441,15 +464,21 @@ void Handler::render_imgui() {
         if (fullsceen_julia != fullsceen_julia_old){
             fullsceen_julia_old = fullsceen_julia;
             if (fullsceen_julia) {
-                pimpl_->fullscreen_mode = JULIA_F;
+                pimpl_->fullscreen_mode = fullscreen_mode_t::JULIA;
+                pimpl_->position_on_right_window.real -= pimpl_->range_x_on_right_window/2;
                 LOG_INFO_WITH_CONTEXT("FULL_SCREEN_JULIA");
                 if (fullsceen_mandelbrot)
                     fullsceen_mandelbrot = false;
             }
         }
 
-        if(!fullsceen_julia && !fullsceen_mandelbrot) {
-            pimpl_->fullscreen_mode = NONE;
+        if(!fullsceen_julia && !fullsceen_mandelbrot && pimpl_->fullscreen_mode != fullscreen_mode_t::NONE) {
+            if(pimpl_->fullscreen_mode == fullscreen_mode_t::MANDELBROT) {
+                pimpl_->position_on_left_window.real += pimpl_->range_x_on_left_window/2;
+            } else {
+                pimpl_->position_on_right_window.real += pimpl_->range_x_on_right_window/2;
+            }
+            pimpl_->fullscreen_mode = fullscreen_mode_t::NONE;
         }
 
 

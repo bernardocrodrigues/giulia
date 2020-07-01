@@ -7,47 +7,30 @@
 #define WIDTH 2000
 #define HEIGHT 1000
 
-typedef enum {
-    MOUSE_RELEASSED,
-    MOUSE_JUST_CLICKED,
-    MOUSE_CLICKED
-} mouse_state_t ;
+enum class mouse_state_t { MOUSE_RELEASSED, MOUSE_JUST_CLICKED, MOUSE_CLICKED };
 
-typedef enum {
-  OPENGL_MODE,
-  OPENCL_MODE
-} compute_mode_t;
+enum class compute_mode_t { OPENGL_MODE, OPENCL_MODE };
 
-typedef enum {
-  SINGLE_MODE,
-  DOUBLE_MODE
-} precision_mode_t;
+enum class precision_mode_t { SINGLE_MODE, DOUBLE_MODE };
 
-typedef enum {
-  MANDELBROT,
-  JULIA
-} compute_target_t;
+enum class compute_target_t { MANDELBROT, JULIA };
 
-typedef enum {
+enum class window_region_t {
   LEFT,
   RIGHT,
   FULL,
-} window_region_t;
+};
 
-typedef enum {
-  NONE,
-  MANDELBROT_F,
-  JULIA_F
-} fullscreen_mode_t;
+enum class fullscreen_mode_t { NONE, MANDELBROT, JULIA };
 
 struct mouse_coodenate {
-    double x;
-    double y;
+  double x;
+  double y;
 };
 
 struct complex_number {
-    double real;
-    double imaginary;
+  double real;
+  double imaginary;
 };
 
 const float left_half_positions[] = {

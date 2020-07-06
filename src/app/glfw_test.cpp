@@ -312,7 +312,7 @@ int main(void) {
         cl_int errCode;
         Texture cl_texture(100, 100, 10);
         // cl_mem mem = clCreateFromGLTexture(context, CL_MEM_WRITE_ONLY, GL_TEXTURE_2D, 0, cl_texture.GetRenderId() ,NULL);
-        cl::ImageGL tex( context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, cl_texture.GetRenderId() ,&errCode);
+        cl::ImageGL tex(context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, cl_texture.GetRenderId() ,&errCode);
         // cl_texture.Unbind();
 
         std::cout << err << std::endl;

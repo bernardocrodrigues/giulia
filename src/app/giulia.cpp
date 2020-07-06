@@ -6,13 +6,16 @@
 
 int main() {
 
-    Window::Handler *WindowHandler;
+    Win::Handler *WindowHandler;
     Renderer::Handler *Renderer;
     try {
-        WindowHandler = new Window::Handler();
-        Renderer = new Renderer::Handler();
+        WindowHandler = new Win::Handler();
+        Renderer = new Renderer::Handler(
+            (cl_context_properties)WindowHandler->get_glx_context(),
+            (cl_context_properties)WindowHandler->get_x11_display());
+        // Renderer = new Renderer::Handler();
     }
-    catch (Window::InitException& e)
+    catch (Win::InitException& e)
     {
         std::cout << e.what() << '\n';
     }
@@ -21,8 +24,6 @@ int main() {
         std::cout << e.what() << ": Unknown Error! Exiting!\n";
         return -1;
     }
-
-    print_hardware_info();
 
     while (WindowHandler->user_has_not_exited()) {
         compute_mode_t mode = WindowHandler->get_selected_compute_mode();
@@ -51,8 +52,8 @@ int main() {
                            WindowHandler->get_x_range_on_right(),
                            WindowHandler->get_color_preset_number(),
                            WindowHandler->get_exponent());
-            Renderer->DrawCursor(aux, aux3,
-                                 WindowHandler->get_x_range_on_left());
+            // Renderer->DrawCursor(aux, aux3,
+            //                      WindowHandler->get_x_range_on_left());
             break;
           case fullscreen_mode_t::MANDELBROT:
             Renderer->Draw(window_region_t::FULL, mode,
@@ -75,8 +76,8 @@ int main() {
             break;
         }
 
-        Renderer->DrawLogo(mode);
-        WindowHandler->render_imgui();
+        // Renderer->DrawLogo(mode);
+        // WindowHandler->render_imgui();
         WindowHandler->swap_buffers();
 
         // } else {

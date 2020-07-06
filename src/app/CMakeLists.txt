@@ -68,14 +68,18 @@ target_link_libraries(Giulia
                               ${GLFW_LIBRARIES}
                               ${OPENGL_LIBRARIES}
                               GLUtils
+                              CLUtils
+                              OpenCL
                               ImGUI
                      )
 
 target_include_directories(Giulia
                                 PRIVATE
+                                ${OPENGL_INCLUDE_DIRS}
                                 ${PROJECT_SOURCE_DIR}/src/app
                                 ${PROJECT_SOURCE_DIR}/src/utils
                                 ${PROJECT_SOURCE_DIR}/src/gl
+                                ${PROJECT_SOURCE_DIR}/src/cl
                                 ${PROJECT_SOURCE_DIR}/src/vendor/glm
                                 ${PROJECT_SOURCE_DIR}/src/vendor/imgui
                           )

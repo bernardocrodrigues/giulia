@@ -21,21 +21,21 @@ namespace logging {
 #define BOLDWHITE "\033[1m\033[37m"   /* Bold White */
 
 #define LOG_INFO(msg)                    \
-  (Log(logging::LogData<logging::None>() \
+  (logging::Log(logging::LogData<logging::None_>() \
        << BOLDWHITE << "[INFO] " << msg << RESET))
 
 #define LOG_INFO_WITH_CONTEXT(msg)                      \
-  (Log(logging::LogData<logging::None>()                \
+  (logging::Log(logging::LogData<logging::None_>()                \
        << BOLDWHITE << "[INFO] " << msg << RESET << " " \
        << __PRETTY_FUNCTION__))
 
 #define LOG_WARNING(msg)                                                       \
-  (Log(logging::LogData<logging::None>()                                       \
+  (logging::Log(logging::LogData<logging::None_>()                                       \
        << BOLDYELLOW << "[WARNING] " << msg << RESET << " " << __FILE__ << ":" \
        << __LINE__))
 
 #define LOG_ERROR(msg)                                                    \
-  (Log(logging::LogData<logging::None>()                                  \
+  (logging::Log(logging::LogData<logging::None_>()                                  \
        << BOLDRED << "[ERROR] " << msg << RESET << " " << __FILE__ << ":" \
        << __LINE__))
 
@@ -48,7 +48,7 @@ namespace logging {
 #endif  // __ICC
 #endif  // NOINLINE_ATTRIBUTE
 
-struct None {};
+struct None_ {};
 
 template <typename List>
 struct LogData {
@@ -81,7 +81,7 @@ void output(std::ostream& os, std::pair<Begin, Last>&& data) {
   os << data.second;
 }
 
-inline void output(std::ostream& os, None) {}
+inline void output([[maybe_unused]]std::ostream& os, None_) {}
 
 template <typename List>
 void Log(LogData<List>&& data) NOINLINE_ATTRIBUTE {

@@ -6,7 +6,7 @@
 #include "glutils.hpp"
 #include "stb_image.h"
 
-void print_hardware_info() {
+void print_opengl_info() {
     auto gl_vendor = glGetString(GL_VENDOR);
     auto gl_renderer = glGetString(GL_RENDERER);
     auto gl_version = glGetString(GL_VERSION);

@@ -3,11 +3,12 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <GLFW/glfw3native.h>
 #include "window_exceptions.hpp"
 #include "data_def.hpp"
 #include <memory>
 
-namespace Window {
+namespace Win {
 
 class Pimpl;
 
@@ -36,6 +37,9 @@ class Handler {
   double get_x_range_on_left();
 
   bool render_requested();
+
+  GLXContext get_glx_context();
+  Display* get_x11_display();
 
  private:
   Pimpl* pimpl_;

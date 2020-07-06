@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include "glm.hpp"
 
-
 #define ASSERT(x) if(!(x)){raise(SIGTRAP);}
 
 #define GlCall(x) GLClearError();\
@@ -16,10 +15,9 @@
     ASSERT(GLCheckError(#x, __BASE_FILE__, __LINE__))
 
 
-void print_hardware_info();
+void print_opengl_info();
 void GLClearError();
 bool GLCheckError(const char* func, const char* file, int line);
-
 
 class VertexBuffer{
     private:
@@ -132,26 +130,6 @@ class Shader{
         int GetUniformLocation(const std::string& name );
 
 };
-
-// class Renderer{
-//     public:
-//         void Draw(const VertexArray& va, const IndexBuffer& ib, const Shader& shader) const;
-//         void Clear() const;
-//         Renderer();
-//         ~Renderer();
-//     private:
-//         VertexBufferLayout layout;
-//         VertexBufferLayout texture_layout;
-
-//         // VertexArray left_half_va;
-//         // VertexBuffer left_half_vb;
-
-//         // VertexArray va_texture;
-//         // VertexBuffer vb_texture;
-
-
-
-// };
 
 class Texture{
     private:

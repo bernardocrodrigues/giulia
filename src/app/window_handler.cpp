@@ -8,7 +8,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-namespace Window {
+namespace Win {
 
 class Pimpl {
     public:
@@ -43,7 +43,7 @@ class Pimpl {
 
 Pimpl::Pimpl() :
     imgui_focus(false),
-    compute_mode(compute_mode_t::OPENGL_MODE),
+    compute_mode(compute_mode_t::OPENCL_MODE),
     precision_mode(precision_mode_t::SINGLE_MODE),
     fullscreen_mode(fullscreen_mode_t::NONE),
     mouse(mouse_state_t::MOUSE_RELEASSED),
@@ -271,7 +271,7 @@ Handler::Handler(complex_number start_position_on_left, complex_number start_pos
 
     glfwSetErrorCallback(glfw_error_callback);
 
-    pimpl_->window = glfwCreateWindow(WIDTH, HEIGHT, "Hello World", NULL, NULL);
+    pimpl_->window = glfwCreateWindow(WIDTH, HEIGHT, "Giulia", NULL, NULL);
 
     if (!pimpl_->window) {
         glfwTerminate();
@@ -294,7 +294,6 @@ Handler::Handler(complex_number start_position_on_left, complex_number start_pos
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
-    // ImGuiIO& io = ImGui::GetIO(); (void)io;
     ImGui::StyleColorsClassic();
     ImGui_ImplGlfw_InitForOpenGL(pimpl_->window, true);
     ImGui_ImplOpenGL3_Init("#version 130");
@@ -534,6 +533,14 @@ bool Handler::render_requested() {
     } else {
         return false;
     }
+}
+
+GLXContext Handler::get_glx_context() {
+    return glfwGetGLXContext(pimpl_->window);
+}
+
+Display* Handler::get_x11_display() {
+    return glfwGetX11Display();
 }
 
 }

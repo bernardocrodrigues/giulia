@@ -1,7 +1,7 @@
 #include <exception>
 #include <string>
 
-namespace Window {
+namespace Win {
 
 class InitException : public std::exception {
   std::string m_msg;

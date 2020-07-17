@@ -39,10 +39,10 @@ struct complex_number {
 };
 
 const float left_half_positions[] = {
-    0.0,                0.0,
-    ((float) WIDTH)/2,  0.0,
-    ((float) WIDTH)/2,  (float) HEIGHT,
-    0.0,                (float) HEIGHT
+    0.0,                0.0,            0.0,    0.0,
+    ((float) WIDTH)/2,  0.0,            1.0,    0.0,
+    ((float) WIDTH)/2,  (float) HEIGHT, 1.0,    1.0,
+    0.0,                (float) HEIGHT, 0.0,    1.0
 };
 
 const float right_half_positions[] = {

@@ -334,7 +334,6 @@ int main(void) {
             cl::NDRange local(10, 10);
             cl::NDRange global(100, 100);
 
-
             kernel.setArg(0, tex);
             queue.enqueueNDRangeKernel(kernel, cl::NullRange, global, local);
 

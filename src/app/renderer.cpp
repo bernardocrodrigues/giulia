@@ -158,7 +158,7 @@ Pimpl::Pimpl(cl_context_properties context, cl_context_properties display) {
     exit(0);
   }
 
-  opengl_texture = new Texture(100, 100, 10);
+  opengl_texture = new Texture(100, 100, 4);
   opencl_texture = new cl::ImageGL(opencl_context, CL_MEM_READ_WRITE, GL_TEXTURE_2D, 0, opengl_texture->GetRenderId() ,&err);
 
   if (err) {
@@ -308,36 +308,55 @@ void Pimpl::DrawCL(window_region_t region, compute_target_t target,
                    complex_number position, complex_number c, int iter,
                    precision_mode_t precision, double range_x, int color_preset,
                    int exponent) const {
+  // try {
+  //   glFinish();
+  //   cl::Event ev;
+  //   std::vector<cl::Memory> objs;
+  //   objs.clear();
+  //   objs.push_back(*opencl_texture);
+  //   cl_int res = opencl_queue->enqueueAcquireGLObjects(&objs, NULL, &ev);
+  //   ev.wait();
+  //   if (res != CL_SUCCESS) {
+  //     std::cout << "Failed acquiring GL object: " << res << std::endl;
+  //     exit(-1);
+  //   }
 
-  try {
-    glFinish();
-    cl::Event ev;
-    std::vector<cl::Memory> objs;
-    objs.clear();
-    objs.push_back(*opencl_texture);
-    cl_int res = opencl_queue->enqueueAcquireGLObjects(&objs, NULL, &ev);
-    ev.wait();
-    if (res != CL_SUCCESS) {
-      std::cout << "Failed acquiring GL object: " << res << std::endl;
-      exit(-1);
-    }
+  //   cl::NDRange local(10, 10);
+  //   cl::NDRange global(10, 10);
 
-    // cl::NDRange local(10, 10);
-    // cl::NDRange global(100, 100);
+  //   opencl_kernel->setArg(0, *opencl_texture);
+  //   opencl_queue->enqueueNDRangeKernel(*opencl_kernel, cl::NullRange, global,
+  //                                      local);
 
-    // kernel.setArg(0, tex);
-    // queue.enqueueNDRangeKernel(kernel, cl::NullRange, global, local);
+  //   opencl_queue->enqueueReleaseGLObjects(&objs);
+  //   ev.wait();
+  //   if (res != CL_SUCCESS) {
+  //     std::cout << "Failed releasing GL object: " << res << std::endl;
+  //     exit(247);
+  //   }
+  //   opencl_queue->finish();
+  // } catch (cl::Error err) {
+  //   std::cout << err.what() << "(" << err.err() << ")" << std::endl;
+  // }
 
-    // queue.enqueueReleaseGLObjects(&objs);
-    // ev.wait();
-    // if (res != CL_SUCCESS) {
-    //   std::cout << "Failed releasing GL object: " << res << std::endl;
-    //   exit(247);
-    // }
-    // queue.finish();
-  } catch (cl::Error err) {
-        std::cout << err.what() << "(" << err.err() << ")" << std::endl;
-  }
-  // LOG_INFO("A");
+      // glm::mat4 proj = glm::ortho(0.0, (double) WIDTH/logo_scale,
+      //                           0.0, (double) HEIGHT/logo_scale,
+      //                           0.0, 2.0);
+
+    // glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(10,10,0));
+    // glm::mat4 mvp = proj * view;
+
+  glm::mat4 proj_screen = glm::ortho(0.0, (double)WIDTH, 0.0, (double)HEIGHT, 0.0, 2.0);
+
+  // opengl_texture->Bind();
+  opengl_logo->Bind();
+  texture_shader->Bind();
+  texture_shader->SetUniform1i("u_texture", 0);
+  texture_shader->SetUniformMat4f("u_MVP", proj_screen);
+  GlCall(glEnable(GL_BLEND));
+  Draw(left_half_va, left_half_ib, texture_shader);
+  // Draw(logo_va, logo_ib, texture_shader);
+  GlCall(glDisable(GL_BLEND));
+
 }
 }

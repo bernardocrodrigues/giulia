@@ -26,5 +26,6 @@ void main()
 {
     vec4 tex_color = texture(u_texture, v_tex_coord);
     color = tex_color;
+    // color = texture2D(u_texture,v_tex_coord);
     // color = vec4(1.0, 1.0, 1.0, 1.0);
 };

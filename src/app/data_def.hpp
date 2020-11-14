@@ -46,10 +46,10 @@ const float left_half_positions[] = {
 };
 
 const float right_half_positions[] = {
-    ((float) WIDTH)/2,  0.0,
-    ((float) WIDTH),    0.0,
-    ((float) WIDTH),    (float) HEIGHT,
-    ((float) WIDTH)/2,  (float) HEIGHT
+    ((float) WIDTH)/2,  0.0,            0.0,    0.0,
+    ((float) WIDTH),    0.0,            1.0,    0.0,
+    ((float) WIDTH),    (float) HEIGHT, 1.0,    1.0,
+    ((float) WIDTH)/2,  (float) HEIGHT, 0.0,    1.0
 };
 
 const float full_screen_positions[] = {

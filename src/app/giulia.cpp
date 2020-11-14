@@ -30,8 +30,6 @@ int main() {
 
         Renderer->Clear();
 
-        // if(WindowHandler->render_requested()) {
-
         complex_number aux = WindowHandler->get_left_position();
         complex_number aux2 = WindowHandler->get_right_position();
         complex_number aux3 = WindowHandler->get_cursor_position();
@@ -52,8 +50,8 @@ int main() {
                            WindowHandler->get_x_range_on_right(),
                            WindowHandler->get_color_preset_number(),
                            WindowHandler->get_exponent());
-            // Renderer->DrawCursor(aux, aux3,
-            //                      WindowHandler->get_x_range_on_left());
+            Renderer->DrawCursor(aux, aux3,
+                                 WindowHandler->get_x_range_on_left());
             break;
           case fullscreen_mode_t::MANDELBROT:
             Renderer->Draw(window_region_t::FULL, mode,
@@ -75,20 +73,11 @@ int main() {
           default:
             break;
         }
-
-        // Renderer->DrawLogo(mode);
-        // WindowHandler->render_imgui();
+        Renderer->DrawLogo(mode);
+        WindowHandler->render_imgui();
         WindowHandler->swap_buffers();
-
-        // } else {
-        //     WindowHandler->render_imgui();
-        //     WindowHandler->swap_buffers();
-        // }
-        // WindowHandler->render_imgui();
         WindowHandler->poll_events();
-
     }
-
     return 0;
 }
 

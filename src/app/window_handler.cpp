@@ -368,20 +368,20 @@ void Handler::render_imgui() {
         ImGui::SameLine();
         ImGui::Checkbox("OpenCL", &opencl);
 
-        ImGui::Text("Precision: ");
+        ImGui::Text("Precision: (OpenGL Only)");
         ImGui::SameLine();
         ImGui::Checkbox("Single", &single_p);
         ImGui::SameLine();
         ImGui::Checkbox("Double", &double_p);
 
-        ImGui::Text("Full Screen: ");
+        ImGui::Text("Full Screen: (OpenGL Only)");
         ImGui::SameLine();
         ImGui::Checkbox("Mandelbrot", &fullsceen_mandelbrot);
         ImGui::SameLine();
         ImGui::Checkbox("Julia", &fullsceen_julia);
 
         ImGui::SliderInt("Iterations", &pimpl_->iter, 0, 2000);
-        ImGui::SliderInt("Color Preset", &pimpl_->color_preset, 1, 5);
+        ImGui::SliderInt("Color Preset (OpenGL Only)", &pimpl_->color_preset, 1, 5);
         ImGui::SliderInt("Z's exponent", &pimpl_->exponent, 2, 30);
 
         if (opengl != opengl_old) {
@@ -480,25 +480,9 @@ void Handler::render_imgui() {
             pimpl_->fullscreen_mode = fullscreen_mode_t::NONE;
         }
 
-
-        // if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-            // counter++;
-        // ImGui::SameLine();
-        // ImGui::Text("counter = %d", counter);
-
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
     }
-
-    // // 3. Show another simple window.
-    // if (show_another_window)
-    // {
-    //     ImGui::Begin("Another Window", &show_another_window);   // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-    //     ImGui::Text("Hello from another window!");
-    //     if (ImGui::Button("Close Me"))
-    //         show_another_window = false;
-    //     ImGui::End();
-    // }
 
     // Rendering
     ImGui::Render();

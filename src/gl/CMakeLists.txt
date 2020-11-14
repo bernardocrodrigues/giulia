@@ -7,9 +7,6 @@ add_library(GLUtils glutils.cpp)
 set(OpenGL_GL_PREFERENCE GLVND)
 
 find_package(OpenGL REQUIRED)
-# find_package(GLEW REQUIRED)
-# find_package(PkgConfig REQUIRED)
-# pkg_search_module(GLFW REQUIRED glfw3)
 
 target_link_libraries(GLUtils ${OPENGL_LIBRARIES})
 

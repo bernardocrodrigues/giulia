@@ -24,7 +24,7 @@ class Pimpl{
         mouse_coodenate ComplexNumber2Coodnate(complex_number origin, complex_number position, double range_x, double range_y) const;
 
         VertexBufferLayout layout;
-        VertexBufferLayout logo_layout;
+        VertexBufferLayout texture_layout;
 
         VertexArray     *logo_va;
         VertexBuffer    *logo_vb;
@@ -67,22 +67,22 @@ class Pimpl{
 
 Pimpl::Pimpl(cl_context_properties context, cl_context_properties display) {
   layout.Push<float>(2);
-  logo_layout.Push<float>(2);
-  logo_layout.Push<float>(2);
+  texture_layout.Push<float>(2);
+  texture_layout.Push<float>(2);
 
   logo_va = new VertexArray();
   logo_vb = new VertexBuffer(logo_positions, 16 * sizeof(float));
-  logo_va->AddBuffer(*logo_vb, logo_layout);
+  logo_va->AddBuffer(*logo_vb, texture_layout);
   logo_ib = new IndexBuffer(indices, 6);
 
   left_half_va = new VertexArray();
   left_half_vb = new VertexBuffer(left_half_positions, 16 * sizeof(float));
-  left_half_va->AddBuffer(*left_half_vb, logo_layout);
+  left_half_va->AddBuffer(*left_half_vb, texture_layout);
   left_half_ib = new IndexBuffer(indices, 6);
 
   right_half_va = new VertexArray();
-  right_half_vb = new VertexBuffer(right_half_positions, 8 * sizeof(float));
-  right_half_va->AddBuffer(*right_half_vb, layout);
+  right_half_vb = new VertexBuffer(right_half_positions, 16 * sizeof(float));
+  right_half_va->AddBuffer(*right_half_vb, texture_layout);
   right_half_ib = new IndexBuffer(indices, 6);
 
   full_screen_va = new VertexArray();
@@ -95,27 +95,24 @@ Pimpl::Pimpl(cl_context_properties context, cl_context_properties display) {
   cursor_va->AddBuffer(*cursor_vb, layout);
   cursor_ib = new IndexBuffer(cursor_indices, 6);
 
-  texture_shader = new Shader("src/gl/shaders/texture.shader");
+  texture_shader = new Shader("/home/brodrigues/Project/giulia/src/gl/shaders/texture.shader");
   single_precision_shader = new Shader(
-                     "src/gl/shaders/single_precision.shader");
+                     "/home/brodrigues/Project/giulia/src/gl/shaders/single_precision.shader");
   double_precision_shader = new Shader(
-                     "src/gl/shaders/double_precision.shader");
-  cursor_shader = new Shader("src/gl/shaders/pointer.shader");
+                     "/home/brodrigues/Project/giulia/src/gl/shaders/double_precision.shader");
+  cursor_shader = new Shader("/home/brodrigues/Project/giulia/src/gl/shaders/pointer.shader");
 
-  opengl_logo = new Texture("res/opengl_logo.png");
-  opencl_logo = new Texture("res/opencl_logo.png");
+  opengl_logo = new Texture("/home/brodrigues/Project/giulia/res/opengl_logo.png");
+  opencl_logo = new Texture("/home/brodrigues/Project/giulia/res/opencl_logo.png");
 
-  // int err;
-
-  int err = create_program("src/cl/kernels/fractal.cl", context, display, &opencl_program);
-  // auto a = create_program("src/cl/kernels/fractal.cl", context, display);
+  int err = create_program("/home/brodrigues/Project/giulia/src/cl/kernels/fractal.cl", context, display, &opencl_program);
 
   switch (err) {
     case -1000:
       LOG_ERROR(
           "OpenCL and OpenGL Devices are not the same! This can happen on "
           "computers with more than one GPU. Please enforce that the "
-          "application is running completly in the ONE DEVICE!");
+          "application is running completly in the SAME DEVICE!");
       exit(-1);
     case 0:
     break;
@@ -126,7 +123,6 @@ Pimpl::Pimpl(cl_context_properties context, cl_context_properties display) {
 
 
   try {
-  //   // opencl_context = (cl::Context*) malloc(sizeof(cl::Context));
     opencl_context = opencl_program->getInfo<CL_PROGRAM_CONTEXT>();
     opencl_device = opencl_program->getInfo<CL_PROGRAM_DEVICES>().front();
     opencl_kernel = new cl::Kernel(*opencl_program, "Fractal", &err);
@@ -151,8 +147,6 @@ Pimpl::Pimpl(cl_context_properties context, cl_context_properties display) {
           "\n       Profile: " << profile);
 
   opencl_queue = new cl::CommandQueue(opencl_context, opencl_device, 0,  &err);
-  // opencl_queue = new cl::CommandQueue(a.getInfo<CL_PROGRAM_CONTEXT>(), a.getInfo<CL_PROGRAM_DEVICES>().front(), 0,  &err);
-
   if (err) {
     LOG_ERROR("Unable to create OpenCL Command Queue. Error: " << err);
     exit(0);
@@ -165,8 +159,6 @@ Pimpl::Pimpl(cl_context_properties context, cl_context_properties display) {
     LOG_ERROR("Unable to create OpenCL Texture. Error: " << err);
     exit(0);
   }
-
-
   print_opengl_info();
 }
 
@@ -321,10 +313,19 @@ void Pimpl::DrawCL(window_region_t region, compute_target_t target,
       exit(-1);
     }
 
-    cl::NDRange local(1, 200);
+    cl::NDRange local(1, 250);
     cl::NDRange global(1000, 1000);
 
     opencl_kernel->setArg(0, *opencl_texture);
+    opencl_kernel->setArg(1, (int) target);
+    opencl_kernel->setArg(2, (float) position.real);
+    opencl_kernel->setArg(3, (float) position.imaginary);
+    opencl_kernel->setArg(4, (float) c.real);
+    opencl_kernel->setArg(5, (float) c.imaginary);
+    opencl_kernel->setArg(6, (int) iter);
+    opencl_kernel->setArg(7, (double) range_x);
+    opencl_kernel->setArg(8, (int) exponent);
+
     opencl_queue->enqueueNDRangeKernel(*opencl_kernel, cl::NullRange, global,
                                        local);
 
@@ -339,24 +340,27 @@ void Pimpl::DrawCL(window_region_t region, compute_target_t target,
     std::cout << err.what() << "(" << err.err() << ")" << std::endl;
   }
 
-    //   glm::mat4 proj = glm::ortho(0.0, (double) WIDTH/logo_scale,
-    //                             0.0, (double) HEIGHT/logo_scale,
-    //                             0.0, 2.0);
-
-    // glm::mat4 view = glm::translate(glm::mat4(1.0), glm::vec3(10,10,0));
-    // glm::mat4 mvp = proj * view;
-
   glm::mat4 proj_screen = glm::ortho(0.0, (double)WIDTH, 0.0, (double)HEIGHT, 0.0, 2.0);
 
   opengl_texture->Bind();
-  // opengl_logo->Bind();
   texture_shader->Bind();
   texture_shader->SetUniform1i("u_texture", 0);
   texture_shader->SetUniformMat4f("u_MVP", proj_screen);
   GlCall(glEnable(GL_BLEND));
-  Draw(left_half_va, left_half_ib, texture_shader);
-  // Draw(logo_va, logo_ib, texture_shader);
-  GlCall(glDisable(GL_BLEND));
 
+  switch (region) {
+    case window_region_t::LEFT:
+      Draw(left_half_va, left_half_ib, texture_shader);
+      break;
+    case window_region_t::RIGHT:
+      Draw(right_half_va, right_half_ib, texture_shader);
+      break;
+    case window_region_t::FULL:
+      Draw(full_screen_va, full_screen_ib, texture_shader);
+      break;
+    default:
+      break;
+  }
+  GlCall(glDisable(GL_BLEND));
 }
 }

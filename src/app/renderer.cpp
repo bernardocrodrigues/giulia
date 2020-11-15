@@ -95,17 +95,16 @@ Pimpl::Pimpl(cl_context_properties context, cl_context_properties display) {
   cursor_va->AddBuffer(*cursor_vb, layout);
   cursor_ib = new IndexBuffer(cursor_indices, 6);
 
-  texture_shader = new Shader("/home/brodrigues/Project/giulia/src/gl/shaders/texture.shader");
-  single_precision_shader = new Shader(
-                     "/home/brodrigues/Project/giulia/src/gl/shaders/single_precision.shader");
-  double_precision_shader = new Shader(
-                     "/home/brodrigues/Project/giulia/src/gl/shaders/double_precision.shader");
-  cursor_shader = new Shader("/home/brodrigues/Project/giulia/src/gl/shaders/pointer.shader");
+  // TODO: Improve kernel loading paths and logic
+  texture_shader = new Shader(PROJECT_SOURCE_DIR "/src/gl/shaders/texture.shader");
+  single_precision_shader = new Shader( PROJECT_SOURCE_DIR "/src/gl/shaders/single_precision.shader");
+  double_precision_shader = new Shader(PROJECT_SOURCE_DIR "/src/gl/shaders/double_precision.shader");
+  cursor_shader = new Shader(PROJECT_SOURCE_DIR "/src/gl/shaders/pointer.shader");
 
-  opengl_logo = new Texture("/home/brodrigues/Project/giulia/res/opengl_logo.png");
-  opencl_logo = new Texture("/home/brodrigues/Project/giulia/res/opencl_logo.png");
+  opengl_logo = new Texture(PROJECT_SOURCE_DIR "/res/opengl_logo.png");
+  opencl_logo = new Texture(PROJECT_SOURCE_DIR "/res/opencl_logo.png");
 
-  int err = create_program("/home/brodrigues/Project/giulia/src/cl/kernels/fractal.cl", context, display, &opencl_program);
+  int err = create_program(PROJECT_SOURCE_DIR "/src/cl/kernels/fractal.cl", context, display, &opencl_program);
 
   switch (err) {
     case -1000:

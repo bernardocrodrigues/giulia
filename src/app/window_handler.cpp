@@ -43,7 +43,7 @@ class Pimpl {
 
 Pimpl::Pimpl() :
     imgui_focus(false),
-    compute_mode(compute_mode_t::OPENCL_MODE),
+    compute_mode(compute_mode_t::OPENGL_MODE),
     precision_mode(precision_mode_t::SINGLE_MODE),
     fullscreen_mode(fullscreen_mode_t::NONE),
     mouse(mouse_state_t::MOUSE_RELEASSED),

@@ -7,6 +7,10 @@ A **G**PU accelerated J**ulia** Set fractal interactive viewer implemented in C+
 Check out these sources if you wish to learn about the Julia Sets, fractals and their relation to the Mandelbrot Set:
 
 - [Julia set - Wikipedia](https://en.wikipedia.org/wiki/Julia_set)
+- [The Julia Sets: How it Works, and Why it's Amazing! - Youtube](https://youtu.be/mg4bp7G0D3s)
+- [What's so special about the Mandelbrot Set?  - Youtube](https://youtu.be/FFftmWSzgmk)
+- [The Mandelbrot Set - Youtube](https://youtu.be/NGMRB4O922I)
+- [Filled Julia Set - Youtube](https://youtu.be/oCkQ7WK7vuY)
 
 ### This project features
 
@@ -24,7 +28,7 @@ Check out these sources if you wish to learn about the Julia Sets, fractals and 
 
 ### Special Thanks 
 
-[The Cherno](https://github.com/TheCherno) for his awesome Youtube Channel and OpenGL tutorials.
+[The Cherno](https://github.com/TheCherno) for his awesome [Youtube Channel](https://www.youtube.com/channel/UCQ-W1KE9EYfdxhL6S4twUNw) and [OpenGL tutorials.](https://youtu.be/W3gAzLwfIP0)
 
 ## How to use it
 
@@ -75,7 +79,7 @@ Tested build environments:
 
 ```bash
 # Install OpenGL related dependencies
-sudo apt-get install mesa-utils freeglut3-dev libglew-dev libglfw3-dev
+sudo apt install mesa-utils freeglut3-dev libglew-dev libglfw3-dev
 
 # Install OpenCL related dependencies
 sudo apt install opencl-headers ocl-icd-opencl-dev
